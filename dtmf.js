@@ -16,8 +16,9 @@ high.connect(context.destination);
 high.noteOn && high.noteOn(0);
 
 
-
 /*
+ * Creates an array of values representing a musical tone of the given frequency
+ *
  * freq: frequency in hz
  * duration: length in seconds
  * sampleRate: sampling rate in hz
@@ -33,6 +34,12 @@ function tone(freq, duration, sampleRate) {
   return curve;
 }
 
+/*
+ * Creates an array of values representing silence
+ *
+ * duration: length in seconds
+ * sampleRate: sampling rate in hz
+ */
 function silence(duration, sampleRate) {
   duration = sampleRate * duration;
 
@@ -44,6 +51,11 @@ function silence(duration, sampleRate) {
   return curve;
 }
 
+/*
+ * Merges 2 tones into 1
+ *
+ * Warning this does not ensure the values are normalized
+ */
 function tone_sum(tone1, tone2) {
   var sum = [];
 
@@ -56,17 +68,9 @@ function tone_sum(tone1, tone2) {
   return sum;
 }
 
-function chop_tone(tone) {
-  for (var i=0; i < tone.length; i++) {
-    if (tone[i] > 1) {
-      tone[i] = 1;
-    } else if (tone[i] < -1) {
-      tone[i] = -1;
-    }
-  }
-
-  return tone;
-}
+/*
+ * Normalizes the tone to values between 1 and -1
+ */
 function normalize_tone(tone) {
   var max = tone.reduce(function(val1, val2) {return Math.max(val1, val2);});
 
@@ -77,18 +81,39 @@ function normalize_tone(tone) {
   return tone;
 }
 
+/*
+ * Converts the tone into values between 0 to 255
+ */
+function convert255(tone) {
+  var curve = [];
+  for (var i=0; i < tone.length; i++) {
+    curve[i]=128 + Math.round(127 * tone[i]);
+  }
+  return curve;
+}
+
 
 var sampleRate = 44100;
-var ringback_tone = tone_sum(tone(400, 0.4, sampleRate), tone(450, 0.4, sampleRate));
-var ringback_curve = normalize_tone(ringback_tone.concat(silence(0.2, sampleRate)).concat(ringback_tone).concat(silence(2, sampleRate)));
+var ringback_tone = tone_sum(tone(440, 2, sampleRate), tone(480, 2, sampleRate));
+var ringback_curve = normalize_tone(ringback_tone.concat(silence(4, sampleRate)));
 
 var wave = new RIFFWAVE();
 wave.header.sampleRate = sampleRate;
 wave.header.numChannels = 1;
 wave.Make(convert255(ringback_curve));
 
-var audio = new Audio();
-audio.src = wave.dataURI;
+var ringback = new Audio();
+ringback.src = wave.dataURI;
+// loop doesn't seem to want to work
+// so until then we have an event listener do the looping for us
+// when the loop attribute is fixed, we can drop the listener
+ringback.loop = true;
+ringback.addEventListener('ended', function() {
+  if (this.loop) {
+    this.currentTime = 0;
+    this.play();
+  }
+}, false);
 
 setTimeout(function() { audio.play(); }, 10);
 
