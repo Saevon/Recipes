@@ -338,7 +338,7 @@ class Grouper(object):
                     index += 1
 
         if self.opts.get('show_groups'):
-           self.print_groups()
+            self.print_groups()
 
     @staticmethod
     def __get_parent(val):
@@ -357,47 +357,57 @@ class Grouper(object):
             return cmp(g1, g2)
 
     def print_groups(self):
+        groups = set(self.groups.keys()) - self.hidden_keys
+
         formatted = []
-        for key in sorted(set(self.groups.keys()) - self.hidden_keys, cmp=Grouper.__group_cmp):
+        for key in sorted(groups, cmp=Grouper.__group_cmp):
             formatted.append(
-            '%4i: %s' % (len(self.groups[key]), key)
-        )
+                '%4i: %s' % (len(self.groups[key]), key)
+            )
 
         print "\n".join(formatted)
+
 
 import argparse
 
 def parse(args=None):
     parser = argparse.ArgumentParser(description='Groups up image files', prog='grouper')
-    parser.add_argument('-g', '--groups',
+    parser.add_argument(
+        '-g', '--groups',
         dest='act_groups', action='store_true', default=False,
         help='shows the groups found',
     )
-    parser.add_argument('-d', '--dups',
+    parser.add_argument(
+        '-d', '--dups',
         dest='act_dups', action='store_true', default=False,
         help='checks for duplicates',
     )
-    parser.add_argument('-s', '--slow-dups',
+    parser.add_argument(
+        '-s', '--slow-dups',
         dest='act_slow_dups', action='store_true', default=False,
         help='Shows duplicates one by one, waiting for input before continuing',
     )
-    parser.add_argument('--ignore-dups',
+    parser.add_argument(
+        '--ignore-dups',
         dest='act_ignore_dups', action='store_true', default=False,
         help='Whether to ignore duplicates, not doing anything to them',
     )
 
-    parser.add_argument('-p', '--parents',
+    parser.add_argument(
+        '-p', '--parents',
         dest='act_parent', action='store_true', default=False,
         help='Whether to touch parent folders, or leave them read-only',
     )
 
 
-    parser.add_argument('-n', '--dry-run',
+    parser.add_argument(
+        '-n', '--dry-run',
         dest='act_dry', action='store_true', default=False,
         help='Only does side-actions (duplicates, group printing, etc.)',
     )
 
-    parser.add_argument('dirs', nargs='*', metavar='folder', help='directories to search')
+    parser.add_argument(
+        'dirs', nargs='*', metavar='folder', help='directories to search')
 
     data = parser.parse_args(args)
     out = {}
