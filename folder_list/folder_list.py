@@ -16,7 +16,7 @@ class FolderList(list):
         # Find all the files
         os.path.walk(path, self, path)
 
-    def _to_file(path):
+    def _to_file(self, path):
         file = File(path)
         if file.type() == File.TYPE_MUSIC:
             return MusicFile(path)

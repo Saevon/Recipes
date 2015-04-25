@@ -22,13 +22,18 @@ class File(object):
         self.path = path
 
     def __str__(self):
-        return self.name
+        return self.filename
 
     def __repr__(self):
         return "'" + str(self) + "'"
 
     def rename(self, name):
-        new_name = os.path.join(self.dir, name)
+        new_name = os.path.join(self.dir, name + self.ext)
+        subprocess.check_call(["mv", self.path, new_name])
+        self.path = new_name
+
+    def change_ext(self, ext):
+        new_name = os.path.join(self.dir, self.name + ext)
         subprocess.check_call(["mv", self.path, new_name])
         self.path = new_name
 
@@ -44,6 +49,10 @@ class File(object):
 
     @property
     def name(self):
+        return os.path.splitext(self.filename)[0]
+
+    @property
+    def filename(self):
         return os.path.basename(self.path)
 
     @property
