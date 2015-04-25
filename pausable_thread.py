@@ -20,6 +20,9 @@ class PausableThread(threading.Thread):
         self.__pause_request = False
         self.__action = threading.Condition()
 
+    #########################################
+    # Parental Use
+
     def pause(self):
         '''
         Tells the thread to pause itself, sleeping until it does so
@@ -40,20 +43,6 @@ class PausableThread(threading.Thread):
 
         return True
 
-    def __stop(self):
-        # First make sure the thread is actually stopped
-        # Note: this isn't technically public Thread stuff
-        value = super(PausableThread, self).__stop()
-
-        # Make sure to now wake anyone who might have begun to wait
-        # before the thread was stopped
-        with self.__action:
-            self.__action.notify_all()
-
-        # Make sure the return value is the same as the original one
-        return value
-
-
     def resume(self):
         '''
         Tells the thread to resume its work
@@ -65,12 +54,15 @@ class PausableThread(threading.Thread):
     def paused(self):
         '''
         Context Manager that pauses the thread then resumes it
+
+            >>> with pthread.paused() as is_alive:
+            ...     # Do stuff
         '''
         yield self.pause()
         self.resume()
 
     #########################################
-    # Internal Methods
+    # Thread internal use (for subclasses)
 
     def pause_point(self):
         '''
@@ -89,5 +81,25 @@ class PausableThread(threading.Thread):
             # Wake the parent, then wait for it
             self.__action.notify_all()
             self.__action.wait()
+
+    #############################################
+    # Private
+
+    def __stop(self):
+        '''
+        Callback in case the thread is stopped while someone is sleeping on it
+        '''
+        # First make sure the thread is actually stopped
+        # Note: this isn't technically a public Thread interface
+        value = super(PausableThread, self).__stop()
+
+        # Make sure to now wake anyone who might have begun to wait
+        # before the thread was stopped
+        with self.__action:
+            self.__action.notify_all()
+
+        # Make sure the return value is the same as the original one
+        return value
+
 
 
