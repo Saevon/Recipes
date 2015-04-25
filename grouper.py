@@ -10,9 +10,6 @@ from collections import defaultdict
 from shutil import rmtree
 
 
-def quote(string):
-    return "'%s'" % string
-
 def chunked(fh, size):
     while True:
         data = fh.read(size)
