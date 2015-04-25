@@ -13,6 +13,7 @@ from chunked import chunked
 from folder_list import File
 
 
+
 class ParentGroup(object):
 
     def __init__(self, name, folder, keys, synonyms=None, hide=False):
@@ -49,7 +50,6 @@ class TempFile(File, lock.LockMixin):
     def __init__(self, path, tmp=None, base=None):
         self.path = path
 
-        self.name, self.ext = os.path.splitext(os.path.basename(path))
         self.cleaned = False
 
         self.tmp_folder = tmp
@@ -274,6 +274,45 @@ class Grouper(object):
 
         return dups
 
+    def dup_input(self, choices):
+        print "Duplicates found"
+
+        while True:
+            print '  i: ignore this group'
+            print '\n'.join(['  %i: %s' % (index, choice) for index, choice in enumerate(choices)]),
+            inp = raw_input('\n>> ')
+
+            # Try to get a number out
+            try:
+                inp = int(inp)
+            except ValueError:
+                pass
+
+            if inp == 'i':
+                inp = None
+                break
+            elif inp >= 0 and inp < len(choices):
+                break
+            else:
+                print "Invalid Input"
+
+        # If the user ignores the dups
+        # then mark them as ignored
+        if inp is None:
+            for dup in choices:
+                self.remove(dup)
+            return
+
+        # If there was a choice, delete the rest
+        for idx, dup in enumerate(choices):
+            if idx == inp:
+                continue
+
+            # delete the file
+            dup.remove()
+            self.remove(dup)
+
+
     def walk(self, folders, output):
         # If we're not doing any real work, then yay! no checks needed
         if not self.opts.get('no_work'):
@@ -301,7 +340,7 @@ class Grouper(object):
                         self.remove(dup)
             elif self.opts.get('slow_dups'):
                 for group in dups:
-                    raw_input("%s\nPress Enter: " % '\n'.join(['    ' + str(dup) for dup in group]))
+                    self.dup_input(group)
             else:
                 groups = []
                 for group in dups:
