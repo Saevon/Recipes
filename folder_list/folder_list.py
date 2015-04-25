@@ -1,38 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import os
-import subprocess
+from file import File
 
-
-def capitalize_words(name):
-    ' ' .join([s.capitalize() for s in name.split(' ')])
-
-class File(object):
-
-    def __init__(self, path):
-        self.path = path
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return "'" + str(self) + "'"
-
-    def rename(self, name):
-        new_name = os.path.join(self.dir, name)
-        subprocess.check_call(["mv", self.path, new_name])
-        self.path = new_name
-
-    def capitalize(self):
-        self.rename(capitalize_words(self.name))
-
-    @property
-    def dir(self):
-        return os.path.dirname(self.path)
-
-    @property
-    def name(self):
-        return os.path.basename(self.path)
+from music_file import MusicFile
 
 
 class FolderList(list):
@@ -44,6 +15,12 @@ class FolderList(list):
 
         # Find all the files
         os.path.walk(path, self, path)
+
+    def _to_file(path):
+        file = File(path)
+        if file.type() == File.TYPE_MUSIC:
+            return MusicFile(path)
+        return file
 
     def __call__(self, arg, dirname, fnames):
         remove = []
@@ -62,16 +39,7 @@ class FolderList(list):
 
             # Add the files we find
             elif os.path.isfile(path):
-                self.append(File(path))
-
-            # TODO: possible extension code
-            # _, ext = os.path.splitext(os.path.basename(name))
-            # if ext in self.CONVERTED_EXTENSIONS:
-            #     ext = self.CONVERTED_EXTENSIONS[ext]
-
-            # if ext not in self.ALLOWED_EXTENSIONS:
-            #     remove.append(name)
-            #     continue
+                self.append(self._to_file(path))
 
         # Now remove the filtered folders
         # Modifying this list makes os.path.walk not recurse into the given directories
