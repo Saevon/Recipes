@@ -10,6 +10,7 @@ from collections import defaultdict
 from shutil import rmtree
 
 from chunked import chunked
+from folder_list import File
 
 
 class ParentGroup(object):
@@ -40,13 +41,13 @@ class ParentGroup(object):
 
         return group
 
-class TempFile(lock.LockMixin):
+class TempFile(File, lock.LockMixin):
 
     ####################################
     # Main Usage
 
     def __init__(self, path, tmp=None, base=None):
-        self.base_path = path
+        self.path = path
 
         self.name, self.ext = os.path.splitext(os.path.basename(path))
         self.cleaned = False
@@ -76,22 +77,11 @@ class TempFile(lock.LockMixin):
     def set_complete(self):
         self.lock('no_work')
 
-    HASH_CHUNK_SIZE = 64
-
-    def hash(self):
-        self.hash = hashlib.sha1()
-
-        with open(self.base_path, 'r') as fh:
-            for data in chunked(fh, TempFile.HASH_CHUNK_SIZE):
-                self.hash.update(data)
-
-        return self.hash.hexdigest()
-
     def __str__(self):
-        if self.base_path.startswith(self.path_prefix):
-            path = self.base_path.replace(self.path_prefix, '/')
+        if self.path.startswith(self.path_prefix):
+            path = self.path.replace(self.path_prefix, '/')
         else:
-            path = self.base_path
+            path = self.path
 
         return '%s(%s)' % (path, self.group)
 
@@ -117,10 +107,10 @@ class TempFile(lock.LockMixin):
 
         # Create the temporary file copy
         fh = tempfile.NamedTemporaryFile(dir=self.tmp_folder, delete=False)
-        self.path = fh.name
+        self.copy_path = fh.name
         fh.close()
 
-        subprocess.check_call(["cp", self.base_path, self.path])
+        subprocess.check_call(["cp", self.path, self.copy_path])
 
         # Mark that we've done the actual work
         # And that it might need undoing
@@ -128,7 +118,7 @@ class TempFile(lock.LockMixin):
         self.lock('can_reset')
 
         # remove the original file
-        subprocess.call(["rm", self.base_path])
+        subprocess.call(["rm", self.path])
 
     @lock.when_unlocked('no_work')
     @lock.when_locked('can_reset')
@@ -136,7 +126,7 @@ class TempFile(lock.LockMixin):
         '''
         Moves the file to its final destination
         '''
-        subprocess.check_call(["mv", self.path, self.ordered_name(index, output)])
+        subprocess.check_call(["mv", self.copy_path, self.ordered_name(index, output)])
 
         # Mark that we've finished processing the file, thus there is nothing more to reset
         self.unlock('can_reset')
@@ -148,7 +138,7 @@ class TempFile(lock.LockMixin):
         Reset any changes to the file (cleanup operation in case of error)
         '''
         try:
-            subprocess.check_call(["mv", self.path, self.base_path])
+            subprocess.check_call(["mv", self.copy_path, self.path])
         except subprocess.CalledProcessError as err:
             print err
 
