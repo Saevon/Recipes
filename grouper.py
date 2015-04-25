@@ -9,13 +9,7 @@ import lock
 from collections import defaultdict
 from shutil import rmtree
 
-
-def chunked(fh, size):
-    while True:
-        data = fh.read(size)
-        if data == "":
-            return
-        yield data
+from chunked import chunked
 
 
 class ParentGroup(object):
