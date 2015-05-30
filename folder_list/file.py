@@ -19,13 +19,13 @@ class File(object):
     TYPE_MISC = 'misc'
 
     def __init__(self, path):
-        self.path = path
+        self.path = unicode(path)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.filename
 
     def __repr__(self):
-        return "'" + str(self) + "'"
+        return "'" + unicode(self) + "'"
 
     def rename(self, name):
         new_name = os.path.join(self.dir, name + self.ext)

@@ -9,6 +9,9 @@ from music_file import MusicFile
 class FolderList(list):
 
     def __init__(self, path, recurse=False, hidden=False):
+        # Ensure unicode
+        path = unicode(path)
+
         # Save some flags
         self.__flag_recurse = recurse
         self.__flag_hidden = hidden

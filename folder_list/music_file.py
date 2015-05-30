@@ -20,3 +20,7 @@ class MusicFile(File):
         if eyed3 is None:
             raise ImportError("No eyeD3 package, can't use 'audiofile' extension")
         return eyed3.load(self.path)
+
+    @property
+    def tag(self):
+        return self.audiofile.tag
