@@ -59,6 +59,11 @@ class File(object):
     def ext(self):
         return os.path.splitext(self.path)[1]
 
+    @property
+    @cached
+    def stat(self):
+        return os.stat_result(os.stat(self.path))
+
     #########################################
     # File Types
     def type(self):
