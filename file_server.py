@@ -84,8 +84,7 @@ app.config.update({
     'quiet': True,
 
     # Starting static folder
-    #'static_root': 'static',
-    'static_root': 'folder_list',
+    'static_root': 'static',
 
     'json': {
         'sort_keys': True,
@@ -120,6 +119,17 @@ app_parser.add_option(
     dest="debug",
     action="store_false",
 )
+app_parser.add_option(
+    "--host",
+    dest="host",
+    action="store",
+)
+app_parser.add_option(
+    "--open",
+    dest="host",
+    action="store_const",
+    const="0.0.0.0",
+)
 
 def parse_options():
     '''
@@ -131,9 +141,11 @@ def parse_options():
         app_parser.error("Too many arguments")
     elif len(args) == 1:
         app.config['host'] = args[0]
+    elif options.host:
+        app.config['host'] = options.host
 
     # Check that the root path is valid
-    if not os.path.exists(options.static_root):
+    if options.static_root and not os.path.exists(options.static_root):
         app_parser.error("Root path does not exist: %" % options['static_root'])
 
     # Remove any unset options, using the defaults defined earlier instead
