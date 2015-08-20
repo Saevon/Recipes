@@ -47,6 +47,16 @@ xattr -d <attribute>
 # Restart Audio Service, get the pid
 ps aux | grep coreaudio
 
+# Fast user Switching
+# to Login Window
+/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend
+#Specific User
+/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -switchToUserID `id -u $USERNAME`
+
+
+# Restart Audio Service, get the pid
+ps aux | grep coreaudio
+
 
 ###########################################
 # Misc
