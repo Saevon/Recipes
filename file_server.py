@@ -2,6 +2,7 @@
 import bottle
 import json
 import os
+import re
 
 from functools import wraps
 
@@ -49,6 +50,65 @@ def show_contents(folder):
 
     return sorted(files)
 
+def if_upload_enabled(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        path = app.config['upload_path']
+        if path is False:
+            raise bottle.HTTPError(status=404)
+        kwargs['upload_path'] = path
+
+        return func(*args, **kwargs)
+    return wrapper
+
+
+
+@app.route('/upload', method='GET')
+@if_upload_enabled
+def upload_html(upload_path):
+    output = u''
+
+    success = 'success' in bottle.request.params
+    if success:
+        output += u'''
+            Upload Succeded<script type="text/javascript">history.pushState({}, "Upload", "/upload");</script>
+        '''
+
+    output += u'''
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            Select a file: <input type="file" name="upload" />
+            <input type="submit" value="Start upload" />
+        </form>
+    '''
+
+    return output
+
+COPY_RE = re.compile(r'^(?P<name>.*) \((?P<num>[0-9]+)\)$')
+
+@app.route('/upload', method='POST')
+@if_upload_enabled
+def upload(upload_path):
+    upload = bottle.request.files.get('upload')
+
+    name, ext = os.path.splitext(upload.filename)
+    # if ext not in ('png', 'jpg', 'jpeg'):
+    #     return 'File extension not allowed.'
+
+    while os.path.exists(os.path.join(upload_path, name + ext)):
+        match = COPY_RE.match(name)
+        if match is not None:
+            name = match.group('name')
+            num = int(match.group('num'))
+        else:
+            num = 1
+        name = '%s (%i)' % (name, num)
+
+    full_path = os.path.join(upload_path, name + ext)
+    upload.save(full_path)
+
+    print "Uploaded: %s" % full_path
+
+    bottle.redirect('/upload?success')
 
 @app.route('/')
 def root():
@@ -85,6 +145,7 @@ app.config.update({
 
     # Starting static folder
     'static_root': 'static',
+    'upload_path': False,
 
     'json': {
         'sort_keys': True,
@@ -113,6 +174,12 @@ app_parser.add_option(
     "-r", "--root",
     dest="static_root",
     action="store",
+)
+app_parser.add_option(
+    "--upload",
+    dest="upload_path",
+    action="store",
+    help="THe folder to save uploaded files (uploading is disabled unless this option is passed in",
 )
 app_parser.add_option(
     "-q", "--quiet",
@@ -156,7 +223,9 @@ def parse_options():
 
 
 if __name__ == '__main__':
-    app.config.update(parse_options())
+    options = parse_options()
+
+    app.config.update(options)
 
     # Debug only settings go here
     if app.config["debug"]:
