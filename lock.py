@@ -53,3 +53,31 @@ class LockMixin(object):
         return getattr(self, _lock_key(name), False)
 
 
+
+import threading
+
+
+def get_threading_lock(self, name):
+    '''
+    Gets this instance's threading lock for the given name
+    '''
+    lock = getattr(self, _lock_key(name), None)
+
+    if lock is None:
+        lock = threading.Lock()
+        setattr(self, _lock_key(name), lock)
+    return lock
+
+def with_threading_lock(name):
+    '''
+    Ensures the method only runs with the named lock
+    '''
+    def wrapper(function):
+        @wraps(function)
+        def decorator(self, *args, **kwargs):
+            with get_threading_lock(self, name):
+                function(self, *args, **kwargs)
+        return decorator
+    return wrapper
+
+
