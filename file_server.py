@@ -213,7 +213,7 @@ def parse_options():
 
     # Check that the root path is valid
     if options.static_root and not os.path.exists(options.static_root):
-        app_parser.error("Root path does not exist: %" % options['static_root'])
+        app_parser.error("Root path does not exist: %" % options.static_root)
 
     # Remove any unset options, using the defaults defined earlier instead
     options = vars(options)
