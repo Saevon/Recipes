@@ -65,6 +65,10 @@ ps aux | grep coreaudio
 # Get space of folders
 du -hs .[!.]* *
 
+# Show the directory permissions, not contents
+ls -d ~
+ls -ld ~
+
 # Terminal notification (number)
 tput bel
 
@@ -85,6 +89,8 @@ disown -h
 command | xargs command2
 # XARGS: for files with spaces (replace show_args.py with your
 find . -name "*.mp3" -print0 | xargs -I{} -0 ~/Projects/Recipe/show_args.py {}
+# XARGS: you can have it display the command run with -t
+echo a b c | xargs -t -n 1 echo
 
 
 # See all open ports on machine
