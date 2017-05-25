@@ -1,6 +1,19 @@
+# (Don't run this stuff...)
+exit 0
+
 ##########################
 # Mac
 ##########################
+
+# toggle root user
+dsenableroot -u $USER
+dsenableroot -d -u $USER
+
+# Reset passwd in single user mode
+fsck -fy
+mount -uw /
+launchctl load /System/Library/LaunchDaemons/com.apple.opendirectoryd.plist
+passwd $username
 
 # Hide File
 sudo chflags hidden $FILE
@@ -33,7 +46,7 @@ dot_clean .
 
 # Saying things to other Audio Devices
 say -r160 -a "AirPlay" "hello world"
-# get a list of all valid autio devices
+# get a list of all valid audio devices
 say -a?
 
 
@@ -42,6 +55,7 @@ say -a?
 
 # Dictionary location
 /Users/<user>/Library/Spelling/LocalDictionary
+/usr/share/dict/words
 
 # Read ACL
 ls -le
@@ -118,6 +132,19 @@ printf "\e]0;$TITLE\a"
 # Misc
 ##########################################
 
+# SUDO keep paths
+sudo env "PATH=${PATH}" cmd
+
+# Sed
+# POSIX space Char
+sed s/^[[:space:]]*//
+
+# Split a : seperated list then run a command on each item
+lnks=
+lnks+=:data
+lnks+=:other
+echo ${lnks} | sed s/^[[:space:]]*:// | tr : '\0' | xargs -0 -I {} echo link {}
+
 # Clean out duplicates in history
 history | nl | sort -k 2 -k 1,1nr | uniq -f 1 | cut -f2 | history -w
 
@@ -128,6 +155,12 @@ find . -name "*.pdf" -exec sh -c 'echo $0, ${0%.pdf}' {} \
 
 # Get space of folders
 du -hs .[!.]* *
+
+# Create large Files:
+# Sparse File (or normal ones in mac)
+dd bs=1 count=0 seek=4g of=large_file.txt
+# Linux
+fallocate -l 4GiB large_file.txt
 
 # Show the directory permissions, not contents
 ls -d ~
@@ -161,6 +194,12 @@ echo a b c | xargs -t -n 1 echo
 # without sudo this only shows your processes
 # -i makes this do network operations
 sudo lsof -PiTCP -sTCP:LISTEN
+
+# Get the IP addresses of the machine
+alias ipPublic="ip route get 8.8.8.8 || curl --silent http://icanhazip.com"
+alias ips="ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'"
+# Gets IPS and the relevant interface
+alias ips="ifconfig | perl -0 -pe 's/\n\t+/ /g' | awk -v RS="\n" '{match($0,"^[^:]+",interface); match($0, "([0-9]{1,3}\\.){3}[0-9]{1,3}",ip); if (ip[0] != "" && ip[0] != "127.0.0.1") { printf interface[0]; print ": "; print ip[0]}}'"
 
 # See all open files
 # lsof shows a shapshot, opensnoop monitors
@@ -206,6 +245,11 @@ python -m json.tool < $FILE
 ssh-keygen -y -f id_rsa -C "serghei@Windy" > id_rsa.pub
 
 
+# Add colours to logs (replace the echo with the log command
+BLUE=`echo -e "\e[36m"` && END=`echo -e "\e[39m"`
+echo "2016-01-01-app hello" | sed -E "s/([0-9]{4}-[0-9]{2}-[0-9]{2}[^ ]*)/$BLUE\1$END/g"
+
+
 
 ##############################################
 # Mail
@@ -213,8 +257,11 @@ ssh-keygen -y -f id_rsa -C "serghei@Windy" > id_rsa.pub
 # postfix
 #  https://blog.anupamsg.me/2012/02/14/enabling-postfix-for-outbound-relay-via-gmail-on-os-x-lion-11/
 
+
 # restart
 postfix reload
+launchctl stop org.postfix.master
+launchctl start org.postfix.master
 
 # logs
 tail -f /var/log/mail*
@@ -222,11 +269,32 @@ tail -f /var/log/mail*
 # check the config
 postconf -n
 
+cd /etc/postfix
+vim ./main.cf
+vim ./aliases
+vim ./generic
+sudo chmod 600 sasl.passwd
+vim sasl.passwd
+vim /System/Library/LaunchDaemons/org.postfix.master.plist
+launchctl unload -w /System/Library/LaunchDaemons/org.postfix.master.plist
+launchctl load -w /System/Library/LaunchDaemons/org.postfix.master.plist
+
+
+# reload the configs
+postfix reload
+postmap generic
+postmap sasl.passwd
+
 # delete mail
 postsuper -d ALL
+# delete deferred mail
+postsuper -d deferred
 
 # view queue
 postqueue -p
+# Retry all mail
+postqueue -f
+
 
 
 #################################################
@@ -246,6 +314,7 @@ while read f; do
     ...
 done
 
+###################
 # SIGNALS:
 # SIGINT: Ctrl-C
 # SIGTERM: exit
@@ -255,16 +324,80 @@ done
 # Proper kill (give each some time): TERM, INT, UP, KILL
 
 
+############################
 # Variables
-echo
-echo "# arguments called with ---->  ${@}     "
-echo "# \$1 ---------------------->  $1       "
-echo "# \$2 ---------------------->  $2       "
 echo "# path to me --------------->  ${0}     "
 echo "# parent path -------------->  ${0%/*}  "
 echo "# my name ------------------>  ${0##*/} "
-echo
-exit
+
+$@ all positional arguments
+$* all positional arguments
+$# number of positional args
+"$@" all arguments as individually quoted
+    cmd 'a' 'b c d' e => "$@" => "a" "b c d" "e"
+"$*" all arguments quoted as a chunk
+    cmd 'a' 'b c d' e => "$*" => "a b c d e"
+
+$0 me
+$1-$N my args
+${@:3} my args 3-N
+
+$$      your PID
+${PPID} PPID
+$!      PID of the last background command (run with &)
+
+
+################
+# variable substitution
+
+# ":" makes the command also replace values that are declared, but empty
+# this works in all the subsequent commands
+${var:-default}
+
+# Default value
+${var-default}  substitute with string "default" if var is undeclared
+${var-$default} substitute with $default if var is undeclared
+
+# default value, and set variable
+${var=default}  sets the variable to the given string if undeclared
+
+# replace value if set
+${var+default} Outputs the default only if var is not undeclared
+${var:+default} Outputs the default if var is neither undeclared nor empty
+
+# Error out if set
+${var?err_message}
+
+
+# Variable length
+${#var}
+
+# Regexp
+${var#regexp}   remove shortest match from front
+${var##regexp}  remove longest match (greedy) from front
+${var%regexp}   remove shortest match from back
+${var%%regexp}  remove longest match (greedy) from back
+${var/regexp/replace}   replace
+${var/#regexp/replace}  replace matching front
+${var/%regexp/replace}  replace matching back
+${var//regexp/replace}  global replace
+
+
+# Substr
+${var:3}   from [3:]
+${var:3:2} from [3:5] (second param is length)
+
+
+# programmatic var names
+${!prefix*} get all variable names starting with prefix
+${!prefix@}
+${!var}     expand the variable $var, then expand that as a variable name
+    b=12 a=b ${!a} => 12
+
+
+
+
+
 
 ##############
 # If statements
@@ -291,7 +424,6 @@ $(( ))
 # ==, !=, <, >, <=, >=
 # ! && ||
 # ~ & | ^: bitwise
-
 
 
 && # -a in [ ]
@@ -379,7 +511,7 @@ convert $IN.jpg $OUT.jpg -resize
 # Change Bookmarks/TOC in pdf
 # Note: binary name changed by me from jpdfbookmarks
 pdfbookmarks --apply bookmarks.txt --out $OUT.pdf $IN.pdf
-pdfbookmarks --dump --out bookmarks.txt $IN.pdf
+pdfbookmarks --dump $IN.pdf --out bookmarks.txt
 
 
 
@@ -406,6 +538,20 @@ mid3iconv -dp -e $encoding $file
 # convert webm with mp4s (keeping both)
  find . -name "*.webm" -exec sh -c 'ffmpeg -i "$0" "${0%.webm}.mp4" -c:v libx264 -c:a aac -strict experimental -b:a 192k' {} \;
 
+
+
+
+
+########################################
+# Vim
+########################################
+
+# If this returns -clipboard, you can't copy to clipboard
+# (registers @ or + )
+vim --version | grep '+clipboard'
+
+# exit vim with an error code (e.g. during git commit to abort)
+:cq
 
 
 
@@ -455,6 +601,12 @@ Ctrl-l: clear screen
 echo mistaken/file/path
 ^mistaken^better
 
+# Clear bash command cache (hashtable)
+hash -r
+
+# Force bash to check hashed entries
+shopt -s checkhash
+
 
 ###########################
 # Process/file substitution
@@ -476,13 +628,32 @@ command > /dev/fd/63 2> /dev/fd/64
 #################
 # Brace Expansion
 
-echo example{a..d}
-examplea exampleb examplec exampled
-echo example{1..5}
-example1 example2 example3 example4 example5
+echo --{a..d}
+--a --b --c --d
+echo --{1..5}
+--1 --2 --3 --4 --5
+echo --{,2,a}
+-- --2 --a
 
-# Makes a matrix of all the brace expansions
-mkdir -p {test,prod}/{,usr/,usr/local/}{{,s}bin,etc,lib,share}
+# Bash 4: adds steps
+echo --{1..10..3}
+--1 --4 --7 --10
+
+# Nesting
+echo {{A..Z},{a..z}}
+echo {,{0..2},{a..c}}
+-- --0 --1 --2 --a --b --c
+
+# Matrix: all possible expansions
+echo {test,prod}/{,usr/,usr/local/}{{,s}bin,etc,lib,share}
+
+# Math outputs the '-v' 3*3*3 times (27)
+echo -v{,,}{,,}{,,}
+
+# Number padding
+echo 00{1..9} 0{10..99} {100..999}
+# Bash 4
+echo {001..999}
 
 
 ##################
@@ -509,3 +680,128 @@ complete -A $TYPE [$CMDS...]
 -A user
 
 -A directory
+-A file
+
+
+##############
+# Directory Expansion & Globs
+
+# Home directory
+~
+# CWD
+~+
+# Parent of CWD
+~-
+
+
+#######################
+# Redirections
+
+# Command Substitution (puts output in place)
+echo `cmd`
+echo $(cmd)
+
+# Redirect (pipe) to stdout
+cmd | cmd2
+# Send on stderr through pipe
+echo 2>&1 | cmd2
+# Bash 4.0, Deprecated
+echo |& cmd2
+
+# Redirect to File
+echo > filename
+# Redirect both to file
+echo 2>&1 > filename
+# Redirect both to file, Deprecated
+echo &> filename
+# Dump stdout
+echo > /dev/null
+# Append to file
+echo >> filename
+
+# Redirect from file
+echo < filename
+
+# WARNING! opening a file with > truncates the file immediately
+
+# Redirect from user input (Reads until the given symbol is typed 'EOL')
+grep words << EOL
+# Redirect from string, can be multiline
+grep words <<< 'words go here'
+
+
+# Order Matters!
+# stderr -> original_stdout, stdout -> file
+echo 2>&1 > filename
+# stdout -> file, stderr -> new_stdout -> file
+echo > file 2>&1
+
+# Process Substitution
+# creates a pipe, and outputs its location (filepath) as a string
+# Thus allowing the program to pretend to read/write to a file
+
+diff <(cmd1) <(cmd1)
+
+# Duplicate output
+tee >file | echo 'goes to both file and this command'
+tee >(cmd1) >file | echo 'cmd1 and original stdout both get here (duplicated output)'
+tee >(cmd1) >(cmd2) >/dev/null | echo 'both cmds stdout/stderr goes here'
+
+
+# Permanent Redirections
+exec > filename
+exec > >(cmd)
+
+# Creates a tmp fd 6, and backs up stdout
+# Then makes stdout write to a file
+exec 6>&1 > tmp.log
+# This command now writes to the file
+lsof -a -p $$ -d{0..99}
+# Now we restore stdout cleaning up fd6
+exec 1>&6 6>&-
+# OR a shortversion
+exec 1>&6-
+
+# Named fd, note: if you delete said file, the fd breaks
+exec {data}>data.log
+cmd >&${data}
+
+# Warning: >&- <&- close fd, and some programs will be very unhappy about that
+# If you just want to ignore data from it redirect to /dev/null instead
+
+# Swap stdout stderr
+exec 3>&1 1>&2 2>&3 3>&-
+exec 3>&1- 1>&2 2>&3-
+
+# See current pipes
+lsof -a -p $$ -d{0..99}
+kill -9
+
+# Messing around and seeing the results
+# put any redirects in, and see how the first 99 fd are affected
+# Only the ones that remain open are shown
+# NOTE: 99 is used to ensure you can close fd1 (stdout) and still see what happens
+# Warning: since lsof is in {} temporary fd will be opened as well (ignore those)
+bash -c 'exec 99>&1; { lsof -a -p $$ -d{0..99} >&99; } $REDIRECTS'
+
+
+# Special FD
+
+# Black hole fd
+/dev/null
+# FD that writes null bytes
+/dev/zero
+# FD to current shell
+/dev/tty
+
+
+
+
+
+##############################
+# Subshells
+##############################
+
+# Opens a subshell (both will have a different inner pid and pipes
+x=false; ( x=true; ); echo $x === false
+x=flase; { x=true; }; echo $x === true
