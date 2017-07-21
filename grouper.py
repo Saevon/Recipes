@@ -13,211 +13,17 @@ from shutil import rmtree
 import lock
 from chunked import chunked
 from folder_list import File
+from grouper.group_dict import GroupDict
+from grouper.parent import ParentFinder, Parent
 
-
-class GroupDict(object):
-    '''
-    A List of both pre-sorted and not-sorted items
-    '''
-    def __init__(self):
-        self.__groups = defaultdict(set)
-        # All items that are indexed (mapped by the index group)
-        self.__indexed_groups = defaultdict(set)
-        # All indexes the items have (mapped by the index group)
-        self.__indexed_values = defaultdict(set)
-
-        self.__invalid_groups = set()
-        self.__duplicates = defaultdict(set)
-        self.__hidden_groups = set()
-
-    def remove(self, item):
-        '''
-        Removes an item from the groups
-        '''
-        if item.is_pre_sorted:
-            self.__indexed_groups[item.indexed_group].discard(item)
-
-        self.__groups[item.group].discard(item)
-
-
-    def add(self, item, is_hidden=False):
-        '''
-        Adds an item to the groups
-        '''
-        if is_hidden:
-            self.__hidden_groups.add(item.group)
-
-
-        if item.is_pre_sorted:
-            if item.indexed_group in self.__invalid_groups:
-                # This item is part of an invalid group, which can't be handled right now
-                return
-
-
-            sorted_group = self.__indexed_values[item.indexed_group]
-            if item.index in sorted_group:
-                # The group needs to be invalidated
-                self.invalidate(item.indexed_group, item)
-
-                # Don't add the item to any groups, its invalid
-                return
-
-            self.__indexed_groups[item.indexed_group].add(item)
-            sorted_group.add(item.index)
-
-        self.__groups[item.group].add(item)
-
-    def invalidate(self, indexed_group, item):
-        '''
-        Invalidates an entire group forever
-        '''
-        self.__invalid_groups.add(indexed_group)
-        self.__duplicates[indexed_group] = item
-
-        dead_items = list(self.__indexed_groups[indexed_group])
-
-        for item in dead_items:
-            self.__groups[item.group].remove(item)
-
-
-    def iteritems(self):
-        '''
-        Returns all valid items
-        '''
-        for item in self.__groups.iteritems():
-            yield item
-
-    def is_valid(self):
-        '''
-        Returns whether there where any invalid items
-        '''
-        return len(self.__invalid_groups) == 0
-
-    def invalid_groups(self):
-        '''
-        Returns all invalid groups (as a pair of [group_name, items])
-        '''
-        for group in self.__invalid_groups:
-            yield [group, self.__duplicates[group]]
-
-    def visible_groups(self):
-        '''
-        Returns all the valid group keys that are visible
-        '''
-        all_groups = set(
-            self.__groups.iterkeys(),
-        )
-
-        # Remove hidden items
-        all_groups.difference_update(self.__hidden_groups)
-
-        return all_groups
-
-
-    def get_count(self, group):
-        '''
-        Returns how many items exist for the given group
-        '''
-        return len(self.__groups[group])
-
-
-
-
-class ParentFinder(object):
-    '''
-    Finds which parent an item should go under
-    '''
-
-    def __init__(self):
-        self.__parents = {}
-
-    def hash(self, item):
-        if item.prefix:
-            return item.prefix
-        else:
-            return item.group_name
-
-    def add(self, parent):
-        # Make sure we can find unsorted items
-        # (regardless whether the group allows it, we need to claffisy it to reject them)
-        if parent.prefix is not None:
-            hash_string = parent.prefix
-            self.__parents[hash_string] = parent
-
-        # Now we add just the groups by themselves
-        for group in itertools.chain(parent.keys, parent.synonyms.keys()):
-            hash_string = None
-            if parent.prefix:
-                hash_string = parent.prefix + '~' + group
-            else:
-                hash_string = group
-
-            self.__parents[hash_string] = parent
-
-
-    def find(self, item):
-        hash_string = self.hash(item)
-
-        return self.__parents.get(hash_string, None)
-
-
-class ParentGroup(object):
-
-    def __init__(self, name, folder, keys, synonyms=None, hide=False, prefix=None, allow_unsorted=False):
-        self.name = name
-        self.folder = folder
-        self.keys = keys
-
-        if synonyms is None:
-            synonyms = {}
-        self.synonyms = synonyms
-
-        self.hide = hide
-
-        self.prefix = prefix
-        self.allow_unsorted = allow_unsorted
-
-    def __iter__(self):
-        for key in self.keys:
-            yield key
-        for key in self.synonyms.keys():
-            yield key
-
-    def clean_group(self, group):
-        if group is None:
-            return self.name
-
-        if group in self.synonyms.keys():
-            return self.synonyms.get(group)
-
-        return group
-
-    def __str__(self):
-        return self.name
-
-    def is_valid(self, file):
-        has_valid_group_name = file.group_name in self.keys
-        has_prefix = file.prefix is not None
-
-        if not has_valid_group_name and not has_prefix:
-            # if neither the prefix nor group are valid, then this MUST be an unsorted item
-            if not self.allow_unsorted:
-                return False
-            if file.group_name != self.prefix:
-                # Unsorted items must use the parent prefix as the group name
-                return False
-        elif not has_valid_group_name:
-            # Since this isn't one of those unsorted ones, it must be valid...
-            return False
-        elif has_prefix and self.prefix != file.prefix:
-            # Items with a prefix MUST have the right one
-            return False
-
-        return True
 
 
 
 class TempFile(File, lock.LockMixin):
+    '''
+    A file that knows about its current sorting, and what it should be renamed too
+    It has safety checks so it can undo half-way sorted files (in case of an abort)
+    '''
 
     ####################################
     # Main Usage
@@ -372,13 +178,6 @@ class TempFile(File, lock.LockMixin):
         return self.batch is not None
 
 
-    def set_complete(self):
-        '''
-        Marks the file as "already moved"
-        '''
-        self.lock('no_work')
-
-
     def __str__(self):
         if self.path.startswith(self.path_prefix):
             path = self.path.replace(self.path_prefix, '/')
@@ -390,6 +189,15 @@ class TempFile(File, lock.LockMixin):
 
     ##########################################
     # File Movement
+
+
+    def set_complete(self):
+        '''
+        Marks the file as "already moved"
+        '''
+
+        # Ensure the file will never get moved
+        self.lock('no_work')
 
     @lock.when_unlocked('no_work')
     def tmp_move(self):
