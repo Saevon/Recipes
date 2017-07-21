@@ -1,22 +1,169 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import hashlib
+import itertools
 import os
+import re
 import subprocess
 import tempfile
-import lock
 
 from collections import defaultdict
 from shutil import rmtree
 
+import lock
 from chunked import chunked
 from folder_list import File
 
 
+class GroupDict(object):
+    '''
+    A List of both pre-sorted and not-sorted items
+    '''
+    def __init__(self):
+        self.__groups = defaultdict(set)
+        # All items that are indexed (mapped by the index group)
+        self.__indexed_groups = defaultdict(set)
+        # All indexes the items have (mapped by the index group)
+        self.__indexed_values = defaultdict(set)
+
+        self.__invalid_groups = set()
+        self.__duplicates = defaultdict(set)
+        self.__hidden_groups = set()
+
+    def remove(self, item):
+        '''
+        Removes an item from the groups
+        '''
+        if item.is_pre_sorted:
+            self.__indexed_groups[item.indexed_group].discard(item)
+
+        self.__groups[item.group].discard(item)
+
+
+    def add(self, item, is_hidden=False):
+        '''
+        Adds an item to the groups
+        '''
+        if is_hidden:
+            self.__hidden_groups.add(item.group)
+
+
+        if item.is_pre_sorted:
+            if item.indexed_group in self.__invalid_groups:
+                # This item is part of an invalid group, which can't be handled right now
+                return
+
+
+            sorted_group = self.__indexed_values[item.indexed_group]
+            if item.index in sorted_group:
+                # The group needs to be invalidated
+                self.invalidate(item.indexed_group, item)
+
+                # Don't add the item to any groups, its invalid
+                return
+
+            self.__indexed_groups[item.indexed_group].add(item)
+            sorted_group.add(item.index)
+
+        self.__groups[item.group].add(item)
+
+    def invalidate(self, indexed_group, item):
+        '''
+        Invalidates an entire group forever
+        '''
+        self.__invalid_groups.add(indexed_group)
+        self.__duplicates[indexed_group] = item
+
+        dead_items = list(self.__indexed_groups[indexed_group])
+
+        for item in dead_items:
+            self.__groups[item.group].remove(item)
+
+
+    def iteritems(self):
+        '''
+        Returns all valid items
+        '''
+        for item in self.__groups.iteritems():
+            yield item
+
+    def is_valid(self):
+        '''
+        Returns whether there where any invalid items
+        '''
+        return len(self.__invalid_groups) == 0
+
+    def invalid_groups(self):
+        '''
+        Returns all invalid groups (as a pair of [group_name, items])
+        '''
+        for group in self.__invalid_groups:
+            yield [group, self.__duplicates[group]]
+
+    def visible_groups(self):
+        '''
+        Returns all the valid group keys that are visible
+        '''
+        all_groups = set(
+            self.__groups.iterkeys(),
+        )
+
+        # Remove hidden items
+        all_groups.difference_update(self.__hidden_groups)
+
+        return all_groups
+
+
+    def get_count(self, group):
+        '''
+        Returns how many items exist for the given group
+        '''
+        return len(self.__groups[group])
+
+
+
+
+class ParentFinder(object):
+    '''
+    Finds which parent an item should go under
+    '''
+
+    def __init__(self):
+        self.__parents = {}
+
+    def hash(self, item):
+        if item.prefix:
+            return item.prefix
+        else:
+            return item.group_name
+
+    def add(self, parent):
+        # Make sure we can find unsorted items
+        # (regardless whether the group allows it, we need to claffisy it to reject them)
+        if parent.prefix is not None:
+            hash_string = parent.prefix
+            self.__parents[hash_string] = parent
+
+        # Now we add just the groups by themselves
+        for group in itertools.chain(parent.keys, parent.synonyms.keys()):
+            hash_string = None
+            if parent.prefix:
+                hash_string = parent.prefix + '~' + group
+            else:
+                hash_string = group
+
+            self.__parents[hash_string] = parent
+
+
+    def find(self, item):
+        hash_string = self.hash(item)
+
+        return self.__parents.get(hash_string, None)
+
 
 class ParentGroup(object):
 
-    def __init__(self, name, folder, keys, synonyms=None, hide=False):
+    def __init__(self, name, folder, keys, synonyms=None, hide=False, prefix=None, allow_unsorted=False):
         self.name = name
         self.folder = folder
         self.keys = keys
@@ -26,6 +173,9 @@ class ParentGroup(object):
         self.synonyms = synonyms
 
         self.hide = hide
+
+        self.prefix = prefix
+        self.allow_unsorted = allow_unsorted
 
     def __iter__(self):
         for key in self.keys:
@@ -42,12 +192,41 @@ class ParentGroup(object):
 
         return group
 
+    def __str__(self):
+        return self.name
+
+    def is_valid(self, file):
+        has_valid_group_name = file.group_name in self.keys
+        has_prefix = file.prefix is not None
+
+        if not has_valid_group_name and not has_prefix:
+            # if neither the prefix nor group are valid, then this MUST be an unsorted item
+            if not self.allow_unsorted:
+                return False
+            if file.group_name != self.prefix:
+                # Unsorted items must use the parent prefix as the group name
+                return False
+        elif not has_valid_group_name:
+            # Since this isn't one of those unsorted ones, it must be valid...
+            return False
+        elif has_prefix and self.prefix != file.prefix:
+            # Items with a prefix MUST have the right one
+            return False
+
+        return True
+
+
+
 class TempFile(File, lock.LockMixin):
 
     ####################################
     # Main Usage
-
     def __init__(self, path, tmp=None, base=None):
+        # Defaults
+        self.group_name = ''
+        self.prefix = ''
+        self.copy_path = None
+
         self.path = path
 
         self.cleaned = False
@@ -56,11 +235,7 @@ class TempFile(File, lock.LockMixin):
         if self.tmp_folder is None:
             self.set_complete()
 
-        if "~" in self.name:
-            self.group_name = self.name.split("~")[0]
-            self.group_name = self.group_name.strip().title()
-        else:
-            self.group_name = None
+        self.load_details()
 
         self.parent = None
 
@@ -68,14 +243,141 @@ class TempFile(File, lock.LockMixin):
         if self.path_prefix is None:
             self.path_prefix = ''
 
-    def set_parent_group(self, group):
-        self.parent = group
 
-        # Clean up the group names
+    #-------------------------------------------------------------------
+    # File Identification
+
+    PATH_REGEX = re.compile(
+        r'((?P<prefix>[A-Za-z ]+) *~ *)?(?P<group>[A-Za-z ]+) *~ *'
+        r'('
+            # "Batch" format allows you to group similar files
+            r'('
+                r'(?P<batch>[A-Za-z ]+)'
+                r'\.'
+                r'(?P<index>[0-9]+)'
+            r')'
+        r'|'
+            # Its a sorted value
+            r'(?P<sorted>[0-9]+)'
+        r'|'
+            # Otherwise its just randomness, aka needs to be numbered
+            r'(?P<random>[^\.]+)'
+        r')'
+        r'$'
+    )
+
+    @classmethod
+    def is_valid(_class, name):
+        '''
+        Checks if the filename is a valid groupable file
+        '''
+        match = _class.PATH_REGEX.match(name)
+        return match is not None
+
+    def load_details(self):
+        '''
+        Figures out the group this should be under
+        '''
+        match = self.PATH_REGEX.match(self.name)
+        if match is None:
+            self.group_name = None
+
+            return
+
+        self.prefix = match.group('prefix')
+        if self.prefix is not None:
+            self.prefix = self.prefix.strip()
+
+        self.group_name = match.group('group').strip().title()
+
+        # Identify the type of object
+        self.batch = match.group('batch')
+        if self.batch is not None:
+            self.batch = self.batch.strip()
+
+        # Random value ones are just sortec
+        if self.batch is None:
+            return
+
+        self.index = int(match.group('index').strip())
+
+
+
+    def set_parent_group(self, parent):
+        self.parent = parent
+
+        # Convert the group names to how the parent wants them
+        # (aliases, styles, etc)
         self.group_name = self.parent.clean_group(self.group_name)
 
+
+
+    def output_filename(self, index, output):
+        '''
+        Generates the output filename
+        '''
+        filename = ''
+
+        # Having a group is higher priority than having just a prefix
+        if self.group_name is not None:
+            filename += self.group_name + ' ~ '
+        else:
+            # Prefix is similar, but its for index only ones
+            filename += self.prefix + ' ~ '
+
+        # Format by type
+        if self.batch is not None:
+            filename += '%s.%03i' % (self.batch, self.index)
+        else:
+            filename += '%03i' % index
+
+
+        # add the final extension
+        filename += self.ext
+
+        # Make sure things with a parent use the proper folder, not the generic folder
+        if self.parent:
+            output = self.parent.folder
+
+        return os.path.join(output, filename)
+
+    @property
+    def group(self):
+        '''
+        Returns the unique group it should be in
+        '''
+        parts = []
+
+        if self.prefix is not None:
+            parts.append(self.prefix)
+        elif self.parent is not None:
+            parts.append(self.parent.name)
+
+        if self.group_name != self.parent.name:
+            parts.append(self.group_name)
+
+        hash_string = ' ~ '.join(parts)
+
+        return hash_string
+
+    @property
+    def indexed_group(self):
+        '''
+        Returns the indexed group name (inluding the batch), only works on is_pre_sorted items
+        '''
+        return self.group + ' ~ ' + self.batch
+
+    @property
+    def is_pre_sorted(self):
+        return self.batch is not None
+
+
     def set_complete(self):
+        '''
+        Marks the file as "already moved"
+        '''
         self.lock('no_work')
+
 
     def __str__(self):
         if self.path.startswith(self.path_prefix):
@@ -83,24 +385,11 @@ class TempFile(File, lock.LockMixin):
         else:
             path = self.path
 
-        return '%s(%s)' % (path, self.group)
+        return '%s(%s)' % (path, self.group_name)
 
 
     ##########################################
     # File Movement
-
-    def ordered_name(self, index, output):
-        # If theres a parent, then remove that part from the group
-        if not self.group_name:
-            filename = "%03i%s" % (index, self.ext)
-        else:
-            filename = "%s ~ %03i%s" % (self.group_name, index, self.ext)
-
-        # Make sure things with a parent use the proper folder, not the generic folder
-        if self.parent:
-            output = self.parent.folder
-
-        return os.path.join(output, filename)
 
     @lock.when_unlocked('no_work')
     def tmp_move(self):
@@ -126,7 +415,7 @@ class TempFile(File, lock.LockMixin):
         '''
         Moves the file to its final destination
         '''
-        subprocess.check_call(["mv", self.copy_path, self.ordered_name(index, output)])
+        subprocess.check_call(["mv", self.copy_path, self.output_filename(index, output)])
 
         # Mark that we've finished processing the file, thus there is nothing more to reset
         self.unlock('can_reset')
@@ -142,16 +431,6 @@ class TempFile(File, lock.LockMixin):
         except subprocess.CalledProcessError as err:
             print err
 
-    @property
-    def group(self):
-        if self.group_name is None:
-            return None
-
-        if self.parent:
-            return "%s ~ %s" % (self.parent.name, self.group_name)
-
-        return "%s" % (self.group_name)
-
 
 class Grouper(object):
 
@@ -160,7 +439,7 @@ class Grouper(object):
         self.tmp = None
 
         self.hashes = defaultdict(list)
-        self.groups = defaultdict(list)
+        self.groups = GroupDict()
 
         self.hidden_keys = set()
 
@@ -168,24 +447,22 @@ class Grouper(object):
             self.opts = {}
         else:
             self.opts = opts
-        self.opts.setdefault('no_work', True)
-        self.opts.setdefault('show_dups', False)
-        self.opts.setdefault('show_groups', True)
-        self.opts.setdefault('edit_parents', False)
         self.opts.setdefault('parent_groups', [])
         self.opts.setdefault('base', '')
 
         self.parents = self.opts.get('parent_groups')
 
+        self.errors = set()
+
         # Map out the groups that need moving
-        self.parent_keys = {}
+        self.parent_finder = ParentFinder()
         for parent in self.parents:
-            for key in parent:
-                self.parent_keys[key] = parent
+            self.parent_finder.add(parent)
 
     def __enter__(self):
         if not self.opts.get('no_work'):
             self.tmp = tempfile.mkdtemp()
+            print "Tmp Folder: %s" % self.tmp
 
         return self
 
@@ -206,18 +483,25 @@ class Grouper(object):
         remove = []
 
         # decide which directories to keep going into
-        for index, name in enumerate(fnames):
+        for index, filename in enumerate(fnames):
             # Don't recurse into hidden directories
-            if os.path.basename(name).startswith('.'):
-                remove.append(name)
+            if os.path.basename(filename).startswith('.'):
+                remove.append(filename)
                 continue
 
-            _, ext = os.path.splitext(os.path.basename(name))
+            # Convert extension aliases
+            name, ext = os.path.splitext(os.path.basename(filename))
             if ext in self.CONVERTED_EXTENSIONS:
                 ext = self.CONVERTED_EXTENSIONS[ext]
 
+            # Filter out disallowed extensions
             if ext not in self.ALLOWED_EXTENSIONS:
-                remove.append(name)
+                remove.append(filename)
+                continue
+
+            # Also filter out invalid files
+            if not TempFile.is_valid(name):
+                remove.append(filename)
                 continue
 
         # Now remove the filtered files
@@ -229,17 +513,29 @@ class Grouper(object):
             if os.path.isdir(name):
                 continue
 
-            pic = TempFile(os.path.abspath(os.path.join(dirname, name)), tmp=self.tmp, base=self.opts['base'])
+            fullpath = os.path.abspath(os.path.join(dirname, name))
+            pic = TempFile(fullpath, tmp=self.tmp, base=self.opts['base'])
 
             # See if theres a parent group
-            if arg is not None:
+            parent = arg
+            if parent is not None:
                 # This has a parent, Don't mess with those folders
                 pic.set_parent_group(arg)
                 if not self.opts.get('edit_parents'):
                     pic.set_complete()
-            elif pic.group in self.parent_keys.keys():
-                # This should be added to a parent
-                pic.set_parent_group(self.parent_keys.get(pic.group))
+            else:
+                parent = self.parent_finder.find(pic)
+                if parent is None:
+                    if not self.opts.get('ignore_invalid_filename'):
+                        self.errors.add('No Parent for: %s' % (fullpath))
+                    continue
+                pic.set_parent_group(parent)
+
+            # Check to make sure the rules for this parentGroup is followed
+            if not parent.is_valid(pic):
+                if not self.opts.get('ignore_invalid_filename'):
+                    self.errors.add('Invalid file for parent(%s): %s' % (parent, fullpath))
+                continue
 
             self.add(pic)
 
@@ -250,16 +546,17 @@ class Grouper(object):
 
         self.files.append(pic)
 
-        if pic.group is not None:
-            self.groups[pic.group].append(pic)
+        # Find out whether the group is displayable
+        is_hidden = False
         if pic.parent is not None and pic.parent.hide:
-            self.hidden_keys.add(pic.group)
+            is_hidden = True
+
+        self.groups.add(pic, is_hidden)
 
     def remove(self, file):
         self.files.remove(file)
 
-        if file.group is not None:
-            self.groups[file.group].remove(file)
+        self.groups.remove(file)
 
     def dup_check(self):
         dups = []
@@ -332,6 +629,13 @@ class Grouper(object):
             os.path.walk(folder, self, None)
 
         # Now check if there were any problems
+        if not self.groups.is_valid() and not self.opts.get('ignore_invalid_batches'):
+            for group, reason in self.groups.invalid_groups():
+                self.errors.add("Duplicate Group Index (%s): %s" % (group, reason.path))
+
+        if len(self.errors):
+            raise Exception('Errors:' + ''.join(['\n    ' + error for error in self.errors]))
+
         dups = self.dup_check()
         if dups:
             if self.opts.get('ignore_dups'):
@@ -346,6 +650,7 @@ class Grouper(object):
                 for group in dups:
                     groups.append(', '.join([str(dup) for dup in group]))
                 raise Exception("Duplicate Files: were found: \n    %s" % '\n    '.join(groups))
+
 
         # Check if we're doing work again
         if not self.opts.get('no_work'):
@@ -375,26 +680,18 @@ class Grouper(object):
             return val.split("~")[0]
         return None
 
-    @staticmethod
-    def __group_cmp(val1, val2):
-        g1 = Grouper.__get_parent(val1)
-        g2 = Grouper.__get_parent(val2)
-
-        if g1 == g2:
-            return cmp(val1, val2)
-        else:
-            return cmp(g1, g2)
-
     def print_groups(self):
-        groups = set(self.groups.keys()) - self.hidden_keys
+        group_names = self.groups.visible_groups()
 
         formatted = []
-        for key in sorted(groups, cmp=Grouper.__group_cmp):
+        for key in sorted(group_names):
             formatted.append(
-                '%4i: %s' % (len(self.groups[key]), key)
+                '%4i: %s' % (self.groups.get_count(key), key)
             )
 
         print "\n".join(formatted)
+
+
 
 
 import argparse
@@ -421,6 +718,21 @@ def parse(args=None):
         dest='act_ignore_dups', action='store_true', default=False,
         help='Whether to ignore duplicates, not doing anything to them',
     )
+    parser.add_argument(
+        '--ignore-batch',
+        dest='act_ignore_batch', action='store_true', default=False,
+        help='Whether to ignore invalid batches, not doing anything to them',
+    )
+    parser.add_argument(
+        '--ignore-filename',
+        dest='act_ignore_filename', action='store_true', default=False,
+        help='Whether to ignore invalid filenames (ones that match the format, but are not part of the parent groups), not doing anything to them',
+    )
+    parser.add_argument(
+        '-i',
+        dest='act_ignore_errors', action='store_true', default=False,
+        help='Whether to ignore all problems',
+    )
 
     parser.add_argument(
         '-p', '--parents',
@@ -444,7 +756,17 @@ def parse(args=None):
     out['show_groups'] = data.act_groups
     out['show_dups'] = data.act_dups
     out['ignore_dups'] = data.act_ignore_dups
+    out['ignore_invalid_batches'] = data.act_ignore_batch
+    out['ignore_invalid_filename'] = data.act_ignore_filename
+
+    if data.act_ignore_errors is True:
+        out['ignore_dups'] = True
+        out['ignore_invalid_batches'] = True
+        out['ignore_invalid_filename'] = True
+
     out['slow_dups'] = data.act_slow_dups
+    if out.get('slow_dups') is True:
+        out['show_dups'] = True
     out['edit_parents'] = data.act_parent
 
     out['no_work'] = data.act_dry
