@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+# Converts A bunch of mac Screenshots to 24hour format
+
 
 def to_24(string):
     hour, minute, trail = string.split('.')
