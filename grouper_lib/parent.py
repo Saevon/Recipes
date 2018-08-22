@@ -1,4 +1,4 @@
-
+import itertools
 
 
 
@@ -93,3 +93,4 @@ class ParentGroup(object):
             return False
 
         return True
+

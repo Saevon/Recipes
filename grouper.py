@@ -13,8 +13,8 @@ from shutil import rmtree
 import lock
 from chunked import chunked
 from folder_list import File
-from grouper.group_dict import GroupDict
-from grouper.parent import ParentFinder, Parent
+from grouper_lib.group_dict import GroupDict
+from grouper_lib.parent import ParentFinder, ParentGroup
 
 
 
