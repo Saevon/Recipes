@@ -1,0 +1,6 @@
+Regexp Output: put before $1
+
+\L Lower entire group
+\l lower first char
+\U upper entire group
+\u upper first char
