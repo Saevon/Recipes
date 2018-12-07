@@ -1,5 +1,12 @@
 
 
+# Create SSH filesystem
+#   Logs into the server, mounting its path unto yours (and syncing them)
+sshfs -o defer_permissions user@hostname.com:/${PATH} ${MOUNT}
+    # To Undo the mount...
+    unmount ${MOUNT}
+
+
 # -------------------------------------------------------------------
 # SSH Keys
 
