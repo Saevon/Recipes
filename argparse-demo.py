@@ -7,13 +7,21 @@ parser = argparse.ArgumentParser(
     # lets you change which characters act as prefixes for long options
     # Windows Style:
     # /option
+    # You then need to list every version in the "add_argument"
+    # BUT! they can do different things
     prefix_chars='-+/',
 )
 
 # Common Version Arg
 parser.add_argument('-v', '--version', action='version', version='%(prog)s ')# #__version__)
 
-
+# TODO: Create a 'environment_default' argparser?
+#    * It grabs in order of priority:
+#      1. commandline args
+#      2. environment variables
+#      3. .env variables
+#      4. defaults specified by argparse
+#    * It also adds this to the help text (showing each variable/flag/default)
 
 
 ###########################
@@ -91,6 +99,10 @@ parser.add_argument(
     help='Add different values to list',
 )
 
+# TODO: Create a 'chain_list' action
+#    * for using 'append' with nargs=2+
+#    * with alternative for using const if "nargs=0"
+
 
 ###########################
 # Reusing Parsers (Parents)
@@ -135,22 +147,23 @@ subparsers = parser.add_subparsers(help='commands')
 # A list command
 list_parser = subparsers.add_parser('list', help='List contents')
 list_parser.add_argument('dirname', action='store', help='Directory to list')
-create_parser.set_defaults(func=create)
 
 # A create command
 create_parser = subparsers.add_parser('create', help='Create a directory')
 create_parser.add_argument('dirname', action='store', help='New directory to create')
-create_parser.set_defaults(func=create)
 
 # A delete command
 delete_parser = subparsers.add_parser('delete', help='Remove a directory')
 delete_parser.add_argument('dirname', action='store', help='The directory to remove')
-create_parser.set_defaults(func=delete)
-
 
 
 
 args = parser.parse_args()
-# If you want to tie in a function
+
+# This also ties in a function, by adding an automatic arg to each command
+# (Optional) you probably want to list this above with each argument?
+list_parser.set_defaults(func=your_list_func)
+create_parser.set_defaults(func=your_create_func)
+delete_parser.set_defaults(func=your_delete_func)
 args.func(args)
 
