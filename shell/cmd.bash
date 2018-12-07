@@ -239,49 +239,6 @@ echo "2016-01-01-app hello" | sed -E "s/([0-9]{4}-[0-9]{2}-[0-9]{2}[^ ]*)/$BLUE\
 
 
 
-##############################################
-# Mail
-#############################################
-# postfix
-#  https://blog.anupamsg.me/2012/02/14/enabling-postfix-for-outbound-relay-via-gmail-on-os-x-lion-11/
-
-
-# restart
-postfix reload
-launchctl stop org.postfix.master
-launchctl start org.postfix.master
-
-# logs
-tail -f /var/log/mail*
-
-# check the config
-postconf -n
-
-cd /etc/postfix
-vim ./main.cf
-vim ./aliases
-vim ./generic
-sudo chmod 600 sasl.passwd
-vim sasl.passwd
-vim /System/Library/LaunchDaemons/org.postfix.master.plist
-launchctl unload -w /System/Library/LaunchDaemons/org.postfix.master.plist
-launchctl load -w /System/Library/LaunchDaemons/org.postfix.master.plist
-
-
-# reload the configs
-postfix reload
-postmap generic
-postmap sasl.passwd
-
-# delete mail
-postsuper -d ALL
-# delete deferred mail
-postsuper -d deferred
-
-# view queue
-postqueue -p
-# Retry all mail
-postqueue -f
 
 
 

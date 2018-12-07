@@ -20,6 +20,7 @@ postconf -n
 # show default values
 postconf -d
 
+
 cd /etc/postfix
 vim ./main.cf
 vim ./aliases
