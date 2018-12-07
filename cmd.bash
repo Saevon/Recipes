@@ -33,7 +33,7 @@ pbclean
 
 
 # Fix Duplicate “Open With”
-/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/\LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain user
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain user
 
 # Python env Fix
 export ARCHFLAGS="-Wno-error=unused-command-line-argument-hard-error-in-future"
@@ -41,7 +41,11 @@ export ARCHFLAGS="-Wno-error=unused-command-line-argument-hard-error-in-future"
 # remove all those ._* files
 dot_clean .
 
-# Mac Incremental Adjust: Opt-Shift (vol, bright)
+# Get battery status
+pmset -g batt | { read; read n status; echo "$status"; }
+
+# Mac Incremental Adjust:
+    Opt-Shift (vol, bright)
 
 
 # Saying things to other Audio Devices
@@ -49,13 +53,14 @@ say -r160 -a "AirPlay" "hello world"
 # get a list of all valid audio devices
 say -a?
 
+# Dictionary location
+/Users/<user>/Library/Spelling/LocalDictionary
+/usr/share/dict/words
+
 
 # Set default permissions under a directory
 # MAC ONLY: Unix uses setfacl (see unix section below)
 
-# Dictionary location
-/Users/<user>/Library/Spelling/LocalDictionary
-/usr/share/dict/words
 
 # Read ACL
 ls -le
@@ -132,6 +137,9 @@ printf "\e]0;$TITLE\a"
 # Misc
 ##########################################
 
+# Get full help for anything (any aliases, functions, and location of binaries)
+type -a name
+
 # SUDO keep paths
 sudo env "PATH=${PATH}" cmd
 
@@ -165,6 +173,9 @@ fallocate -l 4GiB large_file.txt
 # Show the directory permissions, not contents
 ls -d ~
 ls -ld ~
+# Show permissions of the entire path
+namei -ml <path>
+
 
 # Terminal notification (number)
 tput bel
@@ -222,21 +233,6 @@ python -m json.tool <(curl rest.site.com/uri/)
 python -m json.tool < $FILE
 
 
-# CronTab times
-# *     ~ all values
-# 1,4   ~ 1 and 4
-# 3,9/2 ~ from 3 to 9 with a step of 2 (aka 3,5,7,9)
-# */3   ~ all values with a step of 3
-#
-# Special values are also allowed
-# @reboot
-# @yearly/@annually
-# @monthly
-# @weekly
-# @daily/@midnight
-# @hourly
-
-
 # Add colours to logs (replace the echo with the log command
 BLUE=`echo -e "\e[36m"` && END=`echo -e "\e[39m"`
 echo "2016-01-01-app hello" | sed -E "s/([0-9]{4}-[0-9]{2}-[0-9]{2}[^ ]*)/$BLUE\1$END/g"
@@ -289,11 +285,11 @@ postqueue -f
 
 
 
+
+
 #################################################
 # Bash Syntax
 #################################################
-
-
 
 # Bash file reading, if you use backticks, you might reach the ARG_MAX
 #   which is the maximum number of characters a command can be in term
@@ -306,7 +302,8 @@ while read f; do
     ...
 done
 
-###################
+
+# -----------------------
 # SIGNALS:
 # SIGINT: Ctrl-C
 # SIGTERM: exit
@@ -314,6 +311,12 @@ done
 # SIGHUP: terminal death (hangup), use nohup to cause a thing not to exit on this
 # SIGINT: Immediate kill
 # Proper kill (give each some time): TERM, INT, UP, KILL
+
+# -----------------------
+# Orphans & the Init Process
+#
+
+# TODO:
 
 
 ############################
@@ -470,6 +473,7 @@ local var=1
 # Arrays
 array=()
 array[0]=a
+array+=('b')
 # get length
 ${#array[@]}
 # print entire array
@@ -600,27 +604,6 @@ hash -r
 shopt -s checkhash
 
 
-###########################
-# Process/file substitution
-
-# puts the result of the echo command into a tmp-file (named pipe) and passes it to command as a filename ~(/dev/fd/64)
-command <(echo yay)
-# creates a named pipe for command to write to (e.g. a command that accepts a logfile). Then instead of writing to a file, the grep command gets the data
-# aka converts file only output to stdout
-command >(grep "error")
-
-# Pipes stdout and stderr to seperate commands
-command > >(tee info.log) 2> >(tee err.log >&2)
-# Expands to this:
-command > /dev/fd/63 2> /dev/fd/64
-# Remember: tee outputs to both a file and stdout.
-# Thus outputs to both stdout, stderr and the two individual files
-
-# Partial Permissions
-command >(sudo tee info.log >/dev/null)
-command >(sudo dd of=info.log)
-
-
 #################
 # Brace Expansion
 
@@ -722,8 +705,12 @@ echo < filename
 
 # Redirect from user input (Reads until the given symbol is typed 'EOL')
 grep words << EOL
-# Redirect from string, can be multiline
+# Redirect from string
 grep words <<< 'words go here'
+# Redirect Special Multiline (it uses the word after `<<` as the delimiter, in this case "EOF")
+grep words <<EOF
+'words go here'
+EOF
 
 
 # Order Matters!
@@ -732,16 +719,42 @@ echo 2>&1 > filename
 # stdout -> file, stderr -> new_stdout -> file
 echo > file 2>&1
 
-# Process Substitution
-# creates a pipe, and outputs its location (filepath) as a string
-# Thus allowing the program to pretend to read/write to a file
 
+# ---------------------------
+# Process/file substitution
+#   creates a pipe, and outputs its location (filepath) as a string
+#   Thus allowing the program to pretend to read/write to a file
+#
 diff <(cmd1) <(cmd1)
+
+# puts the result of the echo command into a tmp-file (named pipe) and passes it to command as a filename ~(/dev/fd/64)
+command <(echo yay)
+# creates a named pipe for command to write to (e.g. a command that accepts a logfile). Then instead of writing to a file, the grep command gets the data
+# aka converts file only output to stdout
+command >(grep "error")
+
+# Pipes stdout and stderr to seperate commands
+command > >(tee info.log) 2> >(tee err.log >&2)
+    # Expands to this:
+    command > /dev/fd/63 2> /dev/fd/64
+
+    # Remember: tee outputs to both a file and stdout.
+    # Thus outputs to both stdout, stderr and the two individual files
+
+# Partial Permissions
+command >(sudo tee info.log >/dev/null)
+command >(sudo dd of=info.log)
+    # You might need to add `status=none` to avoid pollution of stdout
+
+# Use stdin as a "file"
+#   Note: some things accept "-" directly, such as `cat` below
+echo text | diff <(cat -) other.txt
 
 # Duplicate output
 tee >file | echo 'goes to both file and this command'
+# Technically tee will send output to
 tee >(cmd1) >file | echo 'cmd1 and original stdout both get here (duplicated output)'
-tee >(cmd1) >(cmd2) >/dev/null | echo 'both cmds stdout/stderr goes here'
+tee >(cmd1) >(cmd2) | echo 'both cmds stdout/stderr goes here'
 
 
 # Permanent Redirections
