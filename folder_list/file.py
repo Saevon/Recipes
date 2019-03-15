@@ -28,9 +28,18 @@ class File(object):
         return "'" + unicode(self) + "'"
 
     def rename(self, name):
-        new_name = os.path.join(self.dir, name + self.ext)
-        subprocess.check_call(["mv", self.path, new_name])
-        self.path = new_name
+        ''' Renames a file (keeping the existing extension) '''
+
+        # The name is "empty" aka its really a removal...
+        if not len(name):
+            raise Exception("No name Passed in")
+
+        new_path = os.path.join(self.dir, name + self.ext)
+        if os.path.exists(new_path):
+            raise RuntimeError("Rename would overwrite... Aborting")
+
+        subprocess.check_call(["mv", "-n", self.path, new_path])
+        self.path = new_path
 
     def change_ext(self, ext):
         new_name = os.path.join(self.dir, self.name + ext)
