@@ -2,7 +2,11 @@
 # -*- coding: UTF-8 -*-
 from file import File
 from cached import cached
-from wand.image import Image
+
+try:
+    from wand.image import Image
+except ImportError:
+    Image = None
 
 
 class ImageFile(File):

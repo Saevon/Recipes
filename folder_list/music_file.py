@@ -3,24 +3,33 @@
 from file import File
 from cached import cached
 
-try:
-    import eyed3
-except ImportError:
-    eyed3 = None
+
+eyed3 = None
 
 
 class MusicFile(File):
-
-    def __init__(self, path):
-        super(MusicFile, self).__init__(path)
+    ''' A Music file '''
 
     @property
     @cached
-    def audiofile(self):
+    def _audiofile(self):
+        global eyed3
+
         if eyed3 is None:
-            raise ImportError("No eyeD3 package, can't use 'audiofile' extension")
+            try:
+                import eyed3 as _eyed3
+                # Save it globally
+                eyed3 = _eyed3
+            except ImportError:
+                raise ImportError("No eyeD3 package, can't use 'audiofile' extension, call the method to try again")
         return eyed3.load(self.path)
 
     @property
+    def audio(self):
+        ''' Audio info '''
+        return self._audiofile.audioinfo
+
+    @property
     def tag(self):
-        return self.audiofile.tag
+        ''' Audio ID3 Tags '''
+        return self._audiofile.tag
