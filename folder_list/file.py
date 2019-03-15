@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+''' File '''
+
 import os
 import subprocess
 import hashlib
@@ -17,6 +19,7 @@ class File(object):
     )
 
     TYPE_MISC = 'misc'
+    TYPE_FOLDER = 'folder'
 
     def __init__(self, path):
         self.path = unicode(path)
@@ -41,13 +44,24 @@ class File(object):
         subprocess.check_call(["mv", "-n", self.path, new_path])
         self.path = new_path
 
-    def change_ext(self, ext):
-        new_name = os.path.join(self.dir, self.name + ext)
-        subprocess.check_call(["mv", self.path, new_name])
-        self.path = new_name
+    def add_prefix(self, prefix):
+        self.rename(prefix + self.name)
 
-    def remove(self):
-        subprocess.check_call(["rm", self.path])
+    def change_ext(self, ext):
+        ''' Swaps the file extension '''
+        new_path = os.path.join(self.dir, self.name + ext)
+        subprocess.check_call(["mv", "-n", self.path, new_path])
+        self.path = new_path
+        # TODO: this should re-initialize the file, in case its now a music/img/etc file
+
+    def remove(self, force=False):
+        ''' Removes the file (trashes), pass in force=True to delete permanently '''
+        # TODO: Make it multi-os
+        #   Linux: gvfs-trash
+        if force:
+            subprocess.check_call(["rm", self.path])
+        else:
+            subprocess.check_call(["trash", self.path])
 
     def capitalize(self):
         self.rename(string_helpers.capitalize_words(self.name))
@@ -62,6 +76,10 @@ class File(object):
 
     @property
     def filename(self):
+        return os.path.basename(self.path)
+
+    @property
+    def fullname(self):
         return os.path.basename(self.path)
 
     @property
