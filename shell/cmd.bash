@@ -133,6 +133,19 @@ echo -ne  "\033]0;$TITLE\007"
 printf "\e]0;$TITLE\a"
 
 
+# Disk Management
+
+# Partition a Drive
+diskutil partitionDisk ${Disk:/dev/disk3} ${NumDisks:2} GPT ... (see below)
+    HFS+ Boot 25%
+    ExFat Images R
+
+
+
+
+
+
+
 ###########################################
 # Misc
 ##########################################
@@ -207,6 +220,7 @@ alias ips="ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'"
 # Gets IPS and the relevant interface
 alias ips="ifconfig | perl -0 -pe 's/\n\t+/ /g' | awk -v RS="\n" '{match($0,"^[^:]+",interface); match($0, "([0-9]{1,3}\\.){3}[0-9]{1,3}",ip); if (ip[0] != "" && ip[0] != "127.0.0.1") { printf interface[0]; print ": "; print ip[0]}}'"
 
+# File Handles / Inodes
 # See all open files
 # lsof shows a shapshot, opensnoop monitors
 sudo opensnoop
@@ -340,11 +354,20 @@ ${var:3}   from [3:]
 ${var:3:2} from [3:5] (second param is length)
 
 
-# programmatic var names
+# Indirect Variable
+# Programmatic var names
 ${!prefix*} get all variable names starting with prefix
 ${!prefix@}
 ${!var}     expand the variable $var, then expand that as a variable name
-    b=12 a=b ${!a} => 12
+    user_root="23ef0bc0dea0b-root-password"
+    user_self="2099c090a9s09-my-password"
+    user_bot="12309cb908ae09-bot-password"
+
+    # You can now choose a variable by changing this
+    login_user=user_
+
+    # This now outputs: "2099c090a9s09-my-password"
+    ${!login_user}
 
 
 
@@ -427,10 +450,13 @@ fi
 local var=1
 
 
+# --------------------------------
 # Arrays
 array=()
-array[0]=a
-array+=('b')
+# Assign
+array[0]='data'
+# Append
+array+=('new_data')
 # get length
 ${#array[@]}
 # print entire array
@@ -439,6 +465,12 @@ ${array[@]}
 ${array[@]:3:2}
 # slice: after taking an element, slices the elemnt in index one
 ${array[1]:3:2}
+# get length
+${#array[@]}
+# Loop
+for item in "${array[@]}"; do
+    echo $item;
+done
 
 
 

@@ -4,8 +4,10 @@ Splunk Refs
 
 Pull out a new field
 
+
 ```
-| rex field=<NAME> "(?<NAME>[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)"
+# Pull out an IP address
+| rex field=ip "(?<ip>[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)"
 ```
 
 
