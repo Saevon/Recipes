@@ -19,5 +19,5 @@ help:
 .PHONY: test
 
 test:
-	$(TEST)
+	cd python && $(TEST)
 
