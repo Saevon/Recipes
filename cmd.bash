@@ -41,7 +41,7 @@ export ARCHFLAGS="-Wno-error=unused-command-line-argument-hard-error-in-future"
 # remove all those ._* files
 dot_clean .
 
-# Mac Incrementl Adjust: Opt-Shift (vol, bright)
+# Mac Incremental Adjust: Opt-Shift (vol, bright)
 
 
 # Saying things to other Audio Devices
@@ -190,11 +190,6 @@ find . -name "*.mp3" -print0 | xargs -I{} -0 ~/Projects/Recipe/show_args.py {}
 echo a b c | xargs -t -n 1 echo
 
 
-# See all open ports on machine
-# without sudo this only shows your processes
-# -i makes this do network operations
-sudo lsof -PiTCP -sTCP:LISTEN
-
 # Get the IP addresses of the machine
 alias ipPublic="ip route get 8.8.8.8 || curl --silent http://icanhazip.com"
 alias ips="ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'"
@@ -240,9 +235,6 @@ python -m json.tool < $FILE
 # @weekly
 # @daily/@midnight
 # @hourly
-
-# generate private key from public key
-ssh-keygen -y -f id_rsa -C "serghei@Windy" > id_rsa.pub
 
 
 # Add colours to logs (replace the echo with the log command
@@ -624,6 +616,10 @@ command > /dev/fd/63 2> /dev/fd/64
 # Remember: tee outputs to both a file and stdout.
 # Thus outputs to both stdout, stderr and the two individual files
 
+# Partial Permissions
+command >(sudo tee info.log >/dev/null)
+command >(sudo dd of=info.log)
+
 
 #################
 # Brace Expansion
@@ -804,4 +800,4 @@ bash -c 'exec 99>&1; { lsof -a -p $$ -d{0..99} >&99; } $REDIRECTS'
 
 # Opens a subshell (both will have a different inner pid and pipes
 x=false; ( x=true; ); echo $x === false
-x=flase; { x=true; }; echo $x === true
+x=false; { x=true; }; echo $x === true
