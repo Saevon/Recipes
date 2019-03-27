@@ -27,3 +27,7 @@ telnet $server $port
 # SSL telnet: (-quiet hides cert info)
 openssl s_client -connect -quiet $server:$port
     # Opens up a telnet prompt (See Above)
+
+
+# HTTP Headers
+Authorization: Basic base-64-encoded-auth=======
