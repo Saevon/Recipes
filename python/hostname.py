@@ -3,7 +3,6 @@ import platform
 import socket
 
 
-
 def is_ipv4_address(address):
     ''' Whether this is a valid ipv4 address '''
     try:
@@ -31,8 +30,8 @@ def is_ipv6_address(address):
     try:
         socket.inet_pton(socket.AF_INET6, address)
     except AttributeError:
-        return False
         # Function doesn't exist... in which case we cannot tell
+        return False
     except socket.error:
         # It is not an ipv6 address
         return False
@@ -89,13 +88,18 @@ def get_hostname():
     return hostname
 
 
-
-
-
-
-print(is_ipv4_address('10.0.0.1'))
-
 # TODO: Add edge cases for "ipv4/ipv6" addresses
+if __name__ == '__main__':
+    print(is_ipv4_address('10.0.0.1'))
+
+
+
+
+
+
+
+
+
 
 
 
