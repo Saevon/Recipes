@@ -1,5 +1,6 @@
 # --------------------------------------------------------------------------------------
 # Certificate Authority (CA)
+# https://superuser.com/questions/738612/openssl-ca-keyusage-extension
 
 # Creating our root PRIVATE Key
 openssl genrsa -out saevon.root.key 4096
@@ -30,6 +31,10 @@ openssl req -x509 -in mydomain.com.csr -CA saevon.root.crt -CAkey saevon.root.ke
 # Verify that something was signed by you
 openssl verify -CAfile saevon.root.crt mydomain.com.crt
 
+
+# MacOSX Splitting from Keychain.app (after exporting)
+openssl pkcs12 -in path.p12 -out newfile.crt.pem -clcerts -nokeys
+openssl pkcs12 -in path.p12 -out newfile.key.pem -nocerts -nodes
 
 
 # --------------------------------------------------------------------------------------
