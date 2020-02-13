@@ -1,15 +1,22 @@
 # Networking
 
-# Figure out Mac OSX DNS servers
-scutil --dns
-
 # See nameservers (some)
 /etc/resolv.conf
+# MAC
+scutil --dns
 
 # Get a DNS entry
 dig $hostname
 dig @$nameserver
 dig +trace $hostname
+# nslookup is deprecated
+
+# Follow DNS search your system uses (Including Caches)
+# MAC
+dscacheutil -q host -a name $hostname
+# Linux
+getent hosts $hostname
+
 
 
 

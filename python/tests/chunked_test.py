@@ -17,12 +17,12 @@ class ChunkedTest(unittest.TestCase):
         self.file.close()
 
     def testSimple(self):
-        self.assertEqual(self.c2.next(), '12')
-        self.assertEqual(self.c2.next(), '34')
+        self.assertEqual(next(self.c2), '12')
+        self.assertEqual(next(self.c2), '34')
 
     def testMultiIter(self):
-        self.assertEqual(self.c2.next(), '12')
-        self.assertEqual(self.c10.next(), '3456789012')
-        self.assertEqual(self.c2.next(), '34')
+        self.assertEqual(next(self.c2), '12')
+        self.assertEqual(next(self.c10), '3456789012')
+        self.assertEqual(next(self.c2), '34')
 
 

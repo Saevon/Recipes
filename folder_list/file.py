@@ -12,6 +12,7 @@ from cached import cached
 
 
 class File(object):
+    ''' Wrapper around a filesystem object '''
 
     TYPE_MUSIC = 'music'
     EXT_MUSIC = (
@@ -39,7 +40,10 @@ class File(object):
 
         new_path = os.path.join(self.dir, name + self.ext)
         if os.path.exists(new_path):
-            raise RuntimeError("Rename would overwrite... Aborting")
+            raise RuntimeError("Rename would overwrite... Aborting: '{}' to '{}'".format(
+                self.name,
+                name
+            ))
 
         subprocess.check_call(["mv", "-n", self.path, new_path])
         self.path = new_path
