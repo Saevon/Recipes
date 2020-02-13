@@ -26,8 +26,53 @@ sudo lsof -i TCP -s TCP:LISTEN
 sudo lsof -i :8080
 
 
+# ------------------------------------------------------------------------------
+# Routing & Interfaces
+
+# Add an route to an interface
+sudo ifconfig lo0 alias
+# Remove a route for an interface
+sudo ifconfig lo0 -alias
+
+# Check routing tables
+netstat -nr
+arp -a
+
+# See `ip neigbour` man page for states
+# ARP state   meaning
+# permanent   never expires; won't be verified
+# noarp       normal expiration; won't be verified
+# reachable   normal expiration
+# stale       still usable; needs verification            Suspicious, please run verify
+# delay       schedule ARP request; needs verification    TBD
+# probe       sending ARP request                         In-Progress
+# incomplete  first ARP request sent                      some requests for this ip are awaiting resolution
+# failed      no response received                        Retry-count reached, verification failed, etc
+
+# Check active connections
+netstat
+
+# Tun/TAP Interfaces: Interface over SSH
+# https://backreference.org/2010/03/26/tuntap-interface-tutorial/
 
 
+
+# ------------------------------------------------------------------------------
+# Admin  Work
+
+# Get top process using network
+nethogs
+# Examine traffic by interface / source
+iftop
+
+# See how a packet travels
+traceroute
+# See better breakdown of which link is causing slowness
+mtr
+
+# Process
+top
+htop
 
 
 
@@ -42,6 +87,8 @@ sudo lsof -i :8080
 openssl x509 -in cert.{pem,cer,crt} -text -noout
 # If you get 'unable to load certificate' its probably an encoding issue, try DER
 openssl x509 -in cert.der -inform der -text -noout
+
+# See ssl.sh for more info
 
 
 
