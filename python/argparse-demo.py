@@ -1,5 +1,74 @@
 # Full Argparse example
 import argparse
+import logging
+
+
+# Values for the -v, each `v` means it goes up a level
+# Comment out some to skip stages
+# The first one is for 'no -v'
+VERBOSITY = [
+    # logging.DEBUG,
+    logging.INFO,
+    logging.WARNING,
+    logging.ERROR,
+    logging.CRITICAL,
+]
+
+
+def parse(raw_args=None):
+    ''' CLI command parser '''
+
+    # --------------------------------------------------------------------------
+    # Shared arguments
+    shared_args = argparse.ArgumentParser(add_help=False)
+
+    shared_args.add_argument(
+        '-v', '--verbose',
+        dest='verbose', action='count', default=0,
+        help='Increases verbosity',
+    )
+
+    # --------------------------------------------------------------------------
+    parser = argparse.ArgumentParser(
+        description='Process some integers.',
+        parents=[shared_args],
+    )
+
+    # You can now read the "args.command" to see which one was chosen
+    subparsers = parser.add_subparsers(title='commands', dest='command')
+    subparsers.required = True
+
+    # --------------------------------------------------------------------------
+    # A list command
+    list_parser = subparsers.add_parser('list', parents=[shared_args], help='List contents')
+    list_parser.add_argument('dirname', action='store', help='Directory to list')
+
+    # --------------------------------------------------------------------------
+    # A create command
+    create_parser = subparsers.add_parser('create', parents=[shared_args], help='Create a directory')
+    create_parser.add_argument('dirname', action='store', help='New directory to create')
+
+    # --------------------------------------------------------------------------
+    # A delete command
+    delete_parser = subparsers.add_parser('delete', parents=[shared_args], help='Remove a directory')
+    delete_parser.add_argument('dirname', action='store', help='The directory to remove')
+
+    args = parser.parse_args(raw_args)
+
+    # --------------------------------------------------------------------------
+    # Validation & Post-processing
+    if args.verbose >= len(VERBOSITY):
+        raise parser.error('Too verbose: {}'.format(args.verbose))
+    args.verbose = VERBOSITY[args.verbose]
+
+    return args
+
+    # You can now read `args.command` to see which subcommand was chosen
+
+
+
+# -------------------------------------------------------------------------------
+# Alternate flag styles
 
 parser = argparse.ArgumentParser(
     description='Process some integers.',
@@ -51,15 +120,17 @@ parser.add_argument('--mode', nargs='?', const='if no value is passed')
 
 parser.add_argument('--mode', choices=('read-only', 'read-write'))
 
-parser.add_argument('-i', metavar='in-file', type=argparse.filetype('rt'))
-parser.add_argument('-o', metavar='out-file', type=argparse.FileType('wt'))
+# Actually opens the file
+parser.add_argument('-i', metavar="infile", type=argparse.FileType('rt'))
+parser.add_argument('-o', metavar="outfile", type=argparse.FileType('wt'))
 
 
 parser.add_argument(
     'file',
-    metavar='file', type=str, nargs='1',
-    help='file to read/write icon to',
+    type=str, nargs=1,
+    metavar='icon-file', help='file to read/write icon to',
 )
+
 parser.add_argument(
     '-e', '--export',
     dest='action', action='store_const',
@@ -75,7 +146,7 @@ parser.add_argument(
 parser.add_argument(
     '-w', '--write',
     dest='action', action='store',
-    help='Writes the given icon to the file/folder',
+    metavar='act', help='Writes the given icon to the file/folder',
 )
 
 
@@ -84,19 +155,19 @@ parser.add_argument(
 parser.add_argument(
     '-a', '--append',
     action='append', dest='collection', default=[],
-    help='Add repeated values to a list',
+    metavar='item', help='Add repeated values to a list',
 )
 
 parser.add_argument(
     '-B',
     action='append_const', dest='const_collection', const='Value-B',
     default=[],
-    help='Add different values to list',
+    metavar='item', help='Add different values to list',
 )
 parser.add_argument(
     '-C',
     action='append_const', dest='const_collection', const='Value-C',
-    help='Add different values to list',
+    metavar='item', help='Add different values to list',
 )
 
 # TODO: Create a 'chain_list' action
@@ -137,33 +208,34 @@ group.add_argument('-t', '--token', action='store_true')
 
 
 
-####################
-# Sub parsers
-#    like git rm, add, push, etc
-parser = argparse.ArgumentParser()
-
-subparsers = parser.add_subparsers(help='commands')
-
-# A list command
-list_parser = subparsers.add_parser('list', help='List contents')
-list_parser.add_argument('dirname', action='store', help='Directory to list')
-
-# A create command
-create_parser = subparsers.add_parser('create', help='Create a directory')
-create_parser.add_argument('dirname', action='store', help='New directory to create')
-
-# A delete command
-delete_parser = subparsers.add_parser('delete', help='Remove a directory')
-delete_parser.add_argument('dirname', action='store', help='The directory to remove')
-
-
 
 args = parser.parse_args()
 
-# This also ties in a function, by adding an automatic arg to each command
-# (Optional) you probably want to list this above with each argument?
-list_parser.set_defaults(func=your_list_func)
-create_parser.set_defaults(func=your_create_func)
-delete_parser.set_defaults(func=your_delete_func)
-args.func(args)
+
+
+# ---------------------------------
+# Errors
+raise parser.error('Invalid thing: {}'.format(args.argument_name))
+
+
+def arg_real_path(path):
+    ''' Ensures this is a vlaid existing folder '''
+
+    # Validate
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError('Invalid path: {}'.format(path))
+
+    # Convert
+    return os.path.abspath(path)
+
+
+# Default does not pass through the type() conversion
+parser.add_argument('--output-dir', action='store', type=arg_real_path, default=None)
+
+
+
+
+
+
+
 
