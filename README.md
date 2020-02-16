@@ -1,5 +1,4 @@
-Recipies
-========
+# Recipes
 
 Just some useful python reusable code
 

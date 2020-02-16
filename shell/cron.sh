@@ -1,6 +1,7 @@
 
 # Cron runs the moment an event occurs
 #   So its not great for "at least once a X"
+Minute Hour Day-of-month Month Day-of-week
 
 
 
