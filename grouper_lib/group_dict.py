@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 
-
 class GroupDict(object):
     '''
     A List of both pre-sorted and not-sorted items
@@ -35,12 +34,10 @@ class GroupDict(object):
         if is_hidden:
             self.__hidden_groups.add(item.group)
 
-
         if item.is_pre_sorted:
             if item.indexed_group in self.__invalid_groups:
                 # This item is part of an invalid group, which can't be handled right now
                 return
-
 
             sorted_group = self.__indexed_values[item.indexed_group]
             if item.index in sorted_group:
@@ -60,13 +57,14 @@ class GroupDict(object):
         Invalidates an entire group forever
         '''
         self.__invalid_groups.add(indexed_group)
-        self.__duplicates[indexed_group] = item
+        self.__duplicates[indexed_group] = set([item])
 
         dead_items = list(self.__indexed_groups[indexed_group])
 
-        for item in dead_items:
-            self.__groups[item.group].remove(item)
-
+        for dead_item in dead_items:
+            self.__groups[dead_item.group].remove(dead_item)
+            if dead_item.index == item.index:
+                self.__duplicates[indexed_group].add(dead_item)
 
     def iteritems(self):
         '''

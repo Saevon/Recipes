@@ -17,8 +17,6 @@ from grouper_lib.group_dict import GroupDict
 from grouper_lib.parent import ParentFinder, ParentGroup
 
 
-
-
 class TempFile(File, lock.LockMixin):
     '''
     A file that knows about its current sorting, and what it should be renamed too
@@ -49,17 +47,17 @@ class TempFile(File, lock.LockMixin):
         if self.path_prefix is None:
             self.path_prefix = ''
 
-
     #-------------------------------------------------------------------
     # File Identification
 
     PATH_REGEX = re.compile(
-        r'((?P<prefix>[A-Za-z ]+) *~ *)?(?P<group>[A-Za-z ]+) *~ *'
+        r'((?P<prefix>[A-Za-z ]+) *~ *)?'
+        r'(?P<group>[A-Za-z ]+) *~ *'
         r'('
             # "Batch" format allows you to group similar files
             r'('
                 r'(?P<batch>[A-Za-z ]+)'
-                r'\.'
+                r'\s*\.\s*'
                 r'(?P<index>[0-9]+)'
             r')'
         r'|'
@@ -67,7 +65,7 @@ class TempFile(File, lock.LockMixin):
             r'(?P<sorted>[0-9]+)'
         r'|'
             # Otherwise its just randomness, aka needs to be numbered
-            r'(?P<random>[^\.]+)'
+            r'(?P<random>[^\.~]+)'
         r')'
         r'$'
     )
@@ -107,16 +105,14 @@ class TempFile(File, lock.LockMixin):
 
         self.index = int(match.group('index').strip())
 
-
-
-    def set_parent_group(self, parent):
+    def set_parent_group(self, parent, is_sorted=False):
         self.parent = parent
+        if is_sorted:
+            self.prefix = parent.prefix
 
         # Convert the group names to how the parent wants them
         # (aliases, styles, etc)
         self.group_name = self.parent.clean_group(self.group_name)
-
-
 
     def output_filename(self, index, output):
         '''
@@ -136,7 +132,6 @@ class TempFile(File, lock.LockMixin):
             filename += '%s.%03i' % (self.batch, self.index)
         else:
             filename += '%03i' % index
-
 
         # add the final extension
         filename += self.ext
@@ -223,7 +218,11 @@ class TempFile(File, lock.LockMixin):
         '''
         Moves the file to its final destination
         '''
-        subprocess.check_call(["mv", self.copy_path, self.output_filename(index, output)])
+        output_filename = self.output_filename(index, output)
+        if os.path.exists(output_filename):
+            raise Exception("File already exists: {}".format(output_filename))
+
+        subprocess.check_call(["mv", self.copy_path, output_filename])
 
         # Mark that we've finished processing the file, thus there is nothing more to reset
         self.unlock('can_reset')
@@ -237,7 +236,8 @@ class TempFile(File, lock.LockMixin):
         try:
             subprocess.check_call(["mv", self.copy_path, self.path])
         except subprocess.CalledProcessError as err:
-            print err
+            print(err)
+            raise Exception("Failed to move {} to {}".format(self.copy_path, self.path))
 
 
 class Grouper(object):
@@ -270,15 +270,22 @@ class Grouper(object):
     def __enter__(self):
         if not self.opts.get('no_work'):
             self.tmp = tempfile.mkdtemp()
-            print "Tmp Folder: %s" % self.tmp
+            print("Tmp Folder: %s" % self.tmp)
 
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        for pic in self.files:
-            pic.reset()
+        broke = False
 
-        if self.tmp is not None:
+        for pic in self.files:
+            try:
+                pic.reset()
+            except Exception as error:
+                print(error)
+                broke = True
+
+        # Don't remove all the tmp files if some of them didn't revert correctly
+        if not broke and self.tmp is not None:
             rmtree(self.tmp)
         self.tmp = None
 
@@ -328,7 +335,8 @@ class Grouper(object):
             parent = arg
             if parent is not None:
                 # This has a parent, Don't mess with those folders
-                pic.set_parent_group(arg)
+                pic.set_parent_group(arg, is_sorted=True)
+
                 if not self.opts.get('edit_parents'):
                     pic.set_complete()
             else:
@@ -340,9 +348,10 @@ class Grouper(object):
                 pic.set_parent_group(parent)
 
             # Check to make sure the rules for this parentGroup is followed
-            if not parent.is_valid(pic):
+            error = parent.check_validity(pic)
+            if error is not None:
                 if not self.opts.get('ignore_invalid_filename'):
-                    self.errors.add('Invalid file for parent(%s): %s' % (parent, fullpath))
+                    self.errors.add('Invalid file for parent(%s): %s (%s)' % (parent, fullpath, error))
                 continue
 
             self.add(pic)
@@ -380,12 +389,20 @@ class Grouper(object):
         return dups
 
     def dup_input(self, choices):
-        print "Duplicates found"
+        print("Duplicates found (Keep which one?)")
+        PREVIEW_RE = re.compile("p *([0-9]+)")
 
         while True:
-            print '  i: ignore this group'
-            print '\n'.join(['  %i: %s' % (index, choice) for index, choice in enumerate(choices)]),
+            print('  i: ignore this group')
+            print('  p#: open image in finder')
+            print('\n'.join(['  %i: %s' % (index, choice) for index, choice in enumerate(choices)]))
             inp = raw_input('\n>> ')
+
+            match = PREVIEW_RE.match(inp)
+            if match:
+                choice = choices[int(match.group(1))]
+                subprocess.call(["open", "-R", choice.path])
+                continue
 
             # Try to get a number out
             try:
@@ -399,7 +416,7 @@ class Grouper(object):
             elif inp >= 0 and inp < len(choices):
                 break
             else:
-                print "Invalid Input"
+                print("Invalid Input")
 
         # If the user ignores the dups
         # then mark them as ignored
@@ -415,8 +432,8 @@ class Grouper(object):
 
             # delete the file
             dup.remove()
-            self.remove(dup)
 
+            self.remove(dup)
 
     def walk(self, folders, output):
         # If we're not doing any real work, then yay! no checks needed
@@ -439,7 +456,9 @@ class Grouper(object):
         # Now check if there were any problems
         if not self.groups.is_valid() and not self.opts.get('ignore_invalid_batches'):
             for group, reason in self.groups.invalid_groups():
-                self.errors.add("Duplicate Group Index (%s): %s" % (group, reason.path))
+                self.errors.add("Duplicate Group Index (%s): %s" % (
+                    group, [file.path for file in reason]
+                ))
 
         if len(self.errors):
             raise Exception('Errors:' + ''.join(['\n    ' + error for error in self.errors]))
@@ -497,7 +516,7 @@ class Grouper(object):
                 '%4i: %s' % (self.groups.get_count(key), key)
             )
 
-        print "\n".join(formatted)
+        print("\n".join(formatted))
 
 
 
@@ -548,19 +567,14 @@ def parse(args=None):
         help='Whether to touch parent folders, or leave them read-only',
     )
 
-
     parser.add_argument(
         '-n', '--dry-run',
         dest='act_dry', action='store_true', default=False,
         help='Only does side-actions (duplicates, group printing, etc.)',
     )
 
-    parser.add_argument(
-        'dirs', nargs='*', metavar='folder', help='directories to search')
-
     data = parser.parse_args(args)
     out = {}
-    out['dirs'] = data.dirs
     out['show_groups'] = data.act_groups
     out['show_dups'] = data.act_dups
     out['ignore_dups'] = data.act_ignore_dups
