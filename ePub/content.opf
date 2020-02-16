@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+  <metadata xmlns:calibre="http://calibre.kovidgoyal.net/2009/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- The descriptive paragraph about the book -->
+    <dc:description>
+    </dc:description>
+    <!-- Identification Number for the book:
+      `doi`: Digital Object Identifier
+      `isbn`: International Standard Book Number
+      `jdcn`: Japan Digital Comic Number
+      `uuid`: Universally-Unique Identifier
+    -->
+    <dc:identifier id="uuid_id" opf:scheme="uuid">
+        D1D4B733-39AF-48B1-8B24-BC9CAD7E542F
+    </dc:identifier>
+<!--     <dc:publisher></dc:publisher>
+    <dc:contributor opf:role="bkp">calibre (4.9.1) [http://calibre-ebook.com]</dc:contributor>
+ -->
+    <dc:title>Title</dc:title>
+    <!-- <dc:creator opf:file-as="Unknown" opf:role="aut"></dc:creator> -->
+    <dc:language>en</dc:language>
+
+    <!-- <meta name="calibre:timestamp" content="2020-02-05T05:50:51.366773+00:00"/> -->
+    <!-- <meta name="cover" content="cover"/> -->
+  </metadata>
+  <manifest>
+    <item href="src/toc/toc.html" id="toc-page" media-type="application/xhtml+xml"/>
+
+    <item href="src/text/chapter_001.html" id="ch001" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_002.html" id="ch002" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_003.html" id="ch003" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_004.html" id="ch004" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_005.html" id="ch005" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_006.html" id="ch006" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_007.html" id="ch007" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_008.html" id="ch008" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_009.html" id="ch009" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_010.html" id="ch010" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_011.html" id="ch011" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_012.html" id="ch012" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_013.html" id="ch013" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_014.html" id="ch014" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_015.html" id="ch015" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_016.html" id="ch016" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_017.html" id="ch017" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_018.html" id="ch018" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_019.html" id="ch019" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_020.html" id="ch020" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_021.html" id="ch021" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_022.html" id="ch022" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_023.html" id="ch023" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_024.html" id="ch024" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_025.html" id="ch025" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_026.html" id="ch026" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_027.html" id="ch027" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_028.html" id="ch028" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_029.html" id="ch029" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_030.html" id="ch030" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_031.html" id="ch031" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_032.html" id="ch032" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_033.html" id="ch033" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_034.html" id="ch034" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_035.html" id="ch035" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_036.html" id="ch036" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_037.html" id="ch037" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_038.html" id="ch038" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_039.html" id="ch039" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_040.html" id="ch040" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_041.html" id="ch041" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_042.html" id="ch042" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_043.html" id="ch043" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_044.html" id="ch044" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_045.html" id="ch045" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_046.html" id="ch046" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_047.html" id="ch047" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_048.html" id="ch048" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_049.html" id="ch049" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_050.html" id="ch050" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_051.html" id="ch051" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_052.html" id="ch052" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_053.html" id="ch053" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_054.html" id="ch054" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_055.html" id="ch055" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_056.html" id="ch056" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_057.html" id="ch057" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_058.html" id="ch058" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_059.html" id="ch059" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_060.html" id="ch060" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_061.html" id="ch061" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_062.html" id="ch062" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_063.html" id="ch063" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_064.html" id="ch064" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_065.html" id="ch065" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_066.html" id="ch066" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_067.html" id="ch067" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_068.html" id="ch068" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_069.html" id="ch069" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_070.html" id="ch070" media-type="application/xhtml+xml"/>
+    <item href="src/text/chapter_071.html" id="ch071" media-type="application/xhtml+xml"/>
+
+    <item href="src/text/epilogue.html" id="epilogue" media-type="application/xhtml+xml"/>
+
+    <!-- CSS -->
+    <item href="src/css/page.css" id="page_css" media-type="text/css"/>
+
+    <!-- Table of Contents -->
+    <item href="src/toc/toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="toc-page"/>
+
+    <itemref idref="ch001"/>
+    <itemref idref="ch002"/>
+    <itemref idref="ch003"/>
+    <itemref idref="ch004"/>
+    <itemref idref="ch005"/>
+    <itemref idref="ch006"/>
+    <itemref idref="ch007"/>
+    <itemref idref="ch008"/>
+    <itemref idref="ch009"/>
+    <itemref idref="ch010"/>
+    <itemref idref="ch011"/>
+    <itemref idref="ch012"/>
+    <itemref idref="ch013"/>
+    <itemref idref="ch014"/>
+    <itemref idref="ch015"/>
+    <itemref idref="ch016"/>
+    <itemref idref="ch017"/>
+    <itemref idref="ch018"/>
+    <itemref idref="ch019"/>
+    <itemref idref="ch020"/>
+    <itemref idref="ch021"/>
+    <itemref idref="ch022"/>
+    <itemref idref="ch023"/>
+    <itemref idref="ch024"/>
+    <itemref idref="ch025"/>
+    <itemref idref="ch026"/>
+    <itemref idref="ch027"/>
+    <itemref idref="ch028"/>
+    <itemref idref="ch029"/>
+    <itemref idref="ch030"/>
+    <itemref idref="ch031"/>
+    <itemref idref="ch032"/>
+    <itemref idref="ch033"/>
+    <itemref idref="ch034"/>
+    <itemref idref="ch035"/>
+    <itemref idref="ch036"/>
+    <itemref idref="ch037"/>
+    <itemref idref="ch038"/>
+    <itemref idref="ch039"/>
+    <itemref idref="ch040"/>
+    <itemref idref="ch041"/>
+    <itemref idref="ch042"/>
+    <itemref idref="ch043"/>
+    <itemref idref="ch044"/>
+    <itemref idref="ch045"/>
+    <itemref idref="ch046"/>
+    <itemref idref="ch047"/>
+    <itemref idref="ch048"/>
+    <itemref idref="ch049"/>
+    <itemref idref="ch050"/>
+    <itemref idref="ch051"/>
+    <itemref idref="ch052"/>
+    <itemref idref="ch053"/>
+    <itemref idref="ch054"/>
+    <itemref idref="ch055"/>
+    <itemref idref="ch056"/>
+    <itemref idref="ch057"/>
+    <itemref idref="ch058"/>
+    <itemref idref="ch059"/>
+    <itemref idref="ch060"/>
+    <itemref idref="ch061"/>
+    <itemref idref="ch062"/>
+    <itemref idref="ch063"/>
+    <itemref idref="ch064"/>
+    <itemref idref="ch065"/>
+    <itemref idref="ch066"/>
+    <itemref idref="ch067"/>
+    <itemref idref="ch068"/>
+    <itemref idref="ch069"/>
+    <itemref idref="ch070"/>
+    <itemref idref="ch071"/>
+
+    <itemref idref="epilogue"/>
+  </spine>
+  <guide>
+    <reference href="src/toc/toc.html" title="Contents" type="toc"/>
+  </guide>
+</package>

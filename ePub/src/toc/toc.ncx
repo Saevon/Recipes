@@ -1,0 +1,515 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="eng">
+  <head>
+    <meta content="0" name="dtb:totalPageCount"/>
+    <meta content="0" name="dtb:maxPageNumber"/>
+  </head>
+  <docTitle>
+    <text>Title</text>
+  </docTitle>
+  <navMap>
+
+    <navPoint class="chapter" id="i1" playOrder="1">
+      <navLabel>
+        <text>Chapter 1</text>
+      </navLabel>
+      <content src="../text/chapter_001.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i2" playOrder="2">
+      <navLabel>
+        <text>Chapter 2</text>
+      </navLabel>
+      <content src="../text/chapter_002.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i3" playOrder="3">
+      <navLabel>
+        <text>Chapter 3</text>
+      </navLabel>
+      <content src="../text/chapter_003.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i4" playOrder="4">
+      <navLabel>
+        <text>Chapter 4</text>
+      </navLabel>
+      <content src="../text/chapter_004.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i5" playOrder="5">
+      <navLabel>
+        <text>Chapter 5</text>
+      </navLabel>
+      <content src="../text/chapter_005.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i6" playOrder="6">
+      <navLabel>
+        <text>Chapter 6</text>
+      </navLabel>
+      <content src="../text/chapter_006.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i7" playOrder="7">
+      <navLabel>
+        <text>Chapter 7</text>
+      </navLabel>
+      <content src="../text/chapter_007.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i8" playOrder="8">
+      <navLabel>
+        <text>Chapter 8</text>
+      </navLabel>
+      <content src="../text/chapter_008.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i9" playOrder="9">
+      <navLabel>
+        <text>Chapter 9</text>
+      </navLabel>
+      <content src="../text/chapter_009.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i10" playOrder="10">
+      <navLabel>
+        <text>Chapter 10</text>
+      </navLabel>
+      <content src="../text/chapter_010.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i11" playOrder="11">
+      <navLabel>
+        <text>Chapter 11</text>
+      </navLabel>
+      <content src="../text/chapter_011.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i12" playOrder="12">
+      <navLabel>
+        <text>Chapter 12</text>
+      </navLabel>
+      <content src="../text/chapter_012.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i13" playOrder="13">
+      <navLabel>
+        <text>Chapter 13</text>
+      </navLabel>
+      <content src="../text/chapter_013.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i14" playOrder="14">
+      <navLabel>
+        <text>Chapter 14</text>
+      </navLabel>
+      <content src="../text/chapter_014.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i15" playOrder="15">
+      <navLabel>
+        <text>Chapter 15</text>
+      </navLabel>
+      <content src="../text/chapter_015.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i16" playOrder="16">
+      <navLabel>
+        <text>Chapter 16</text>
+      </navLabel>
+      <content src="../text/chapter_016.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i17" playOrder="17">
+      <navLabel>
+        <text>Chapter 17</text>
+      </navLabel>
+      <content src="../text/chapter_017.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i18" playOrder="18">
+      <navLabel>
+        <text>Chapter 18</text>
+      </navLabel>
+      <content src="../text/chapter_018.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i19" playOrder="19">
+      <navLabel>
+        <text>Chapter 19</text>
+      </navLabel>
+      <content src="../text/chapter_019.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i20" playOrder="20">
+      <navLabel>
+        <text>Chapter 20</text>
+      </navLabel>
+      <content src="../text/chapter_020.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i21" playOrder="21">
+      <navLabel>
+        <text>Chapter 21</text>
+      </navLabel>
+      <content src="../text/chapter_021.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i22" playOrder="22">
+      <navLabel>
+        <text>Chapter 22</text>
+      </navLabel>
+      <content src="../text/chapter_022.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i23" playOrder="23">
+      <navLabel>
+        <text>Chapter 23</text>
+      </navLabel>
+      <content src="../text/chapter_023.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i24" playOrder="24">
+      <navLabel>
+        <text>Chapter 24</text>
+      </navLabel>
+      <content src="../text/chapter_024.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i25" playOrder="25">
+      <navLabel>
+        <text>Chapter 25</text>
+      </navLabel>
+      <content src="../text/chapter_025.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i26" playOrder="26">
+      <navLabel>
+        <text>Chapter 26</text>
+      </navLabel>
+      <content src="../text/chapter_026.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i27" playOrder="27">
+      <navLabel>
+        <text>Chapter 27</text>
+      </navLabel>
+      <content src="../text/chapter_027.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i28" playOrder="28">
+      <navLabel>
+        <text>Chapter 28</text>
+      </navLabel>
+      <content src="../text/chapter_028.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i29" playOrder="29">
+      <navLabel>
+        <text>Chapter 29</text>
+      </navLabel>
+      <content src="../text/chapter_029.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i30" playOrder="30">
+      <navLabel>
+        <text>Chapter 30</text>
+      </navLabel>
+      <content src="../text/chapter_030.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i31" playOrder="31">
+      <navLabel>
+        <text>Chapter 31</text>
+      </navLabel>
+      <content src="../text/chapter_031.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i32" playOrder="32">
+      <navLabel>
+        <text>Chapter 32</text>
+      </navLabel>
+      <content src="../text/chapter_032.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i33" playOrder="33">
+      <navLabel>
+        <text>Chapter 33</text>
+      </navLabel>
+      <content src="../text/chapter_033.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i34" playOrder="34">
+      <navLabel>
+        <text>Chapter 34</text>
+      </navLabel>
+      <content src="../text/chapter_034.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i35" playOrder="35">
+      <navLabel>
+        <text>Chapter 35</text>
+      </navLabel>
+      <content src="../text/chapter_035.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i36" playOrder="36">
+      <navLabel>
+        <text>Chapter 36</text>
+      </navLabel>
+      <content src="../text/chapter_036.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i37" playOrder="37">
+      <navLabel>
+        <text>Chapter 37</text>
+      </navLabel>
+      <content src="../text/chapter_037.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i38" playOrder="38">
+      <navLabel>
+        <text>Chapter 38</text>
+      </navLabel>
+      <content src="../text/chapter_038.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i39" playOrder="39">
+      <navLabel>
+        <text>Chapter 39</text>
+      </navLabel>
+      <content src="../text/chapter_039.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i40" playOrder="40">
+      <navLabel>
+        <text>Chapter 40</text>
+      </navLabel>
+      <content src="../text/chapter_040.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i41" playOrder="41">
+      <navLabel>
+        <text>Chapter 41</text>
+      </navLabel>
+      <content src="../text/chapter_041.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i42" playOrder="42">
+      <navLabel>
+        <text>Chapter 42</text>
+      </navLabel>
+      <content src="../text/chapter_042.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i43" playOrder="43">
+      <navLabel>
+        <text>Chapter 43</text>
+      </navLabel>
+      <content src="../text/chapter_043.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i44" playOrder="44">
+      <navLabel>
+        <text>Chapter 44</text>
+      </navLabel>
+      <content src="../text/chapter_044.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i45" playOrder="45">
+      <navLabel>
+        <text>Chapter 45</text>
+      </navLabel>
+      <content src="../text/chapter_045.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i46" playOrder="46">
+      <navLabel>
+        <text>Chapter 46</text>
+      </navLabel>
+      <content src="../text/chapter_046.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i47" playOrder="47">
+      <navLabel>
+        <text>Chapter 47</text>
+      </navLabel>
+      <content src="../text/chapter_047.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i48" playOrder="48">
+      <navLabel>
+        <text>Chapter 48</text>
+      </navLabel>
+      <content src="../text/chapter_048.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i49" playOrder="49">
+      <navLabel>
+        <text>Chapter 49</text>
+      </navLabel>
+      <content src="../text/chapter_049.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i50" playOrder="50">
+      <navLabel>
+        <text>Chapter 50</text>
+      </navLabel>
+      <content src="../text/chapter_050.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i51" playOrder="51">
+      <navLabel>
+        <text>Chapter 51</text>
+      </navLabel>
+      <content src="../text/chapter_051.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i52" playOrder="52">
+      <navLabel>
+        <text>Chapter 52</text>
+      </navLabel>
+      <content src="../text/chapter_052.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i53" playOrder="53">
+      <navLabel>
+        <text>Chapter 53</text>
+      </navLabel>
+      <content src="../text/chapter_053.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i54" playOrder="54">
+      <navLabel>
+        <text>Chapter 54</text>
+      </navLabel>
+      <content src="../text/chapter_054.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i55" playOrder="55">
+      <navLabel>
+        <text>Chapter 55</text>
+      </navLabel>
+      <content src="../text/chapter_055.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i56" playOrder="56">
+      <navLabel>
+        <text>Chapter 56</text>
+      </navLabel>
+      <content src="../text/chapter_056.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i57" playOrder="57">
+      <navLabel>
+        <text>Chapter 57</text>
+      </navLabel>
+      <content src="../text/chapter_057.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i58" playOrder="58">
+      <navLabel>
+        <text>Chapter 58</text>
+      </navLabel>
+      <content src="../text/chapter_058.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i59" playOrder="59">
+      <navLabel>
+        <text>Chapter 59</text>
+      </navLabel>
+      <content src="../text/chapter_059.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i60" playOrder="60">
+      <navLabel>
+        <text>Chapter 60</text>
+      </navLabel>
+      <content src="../text/chapter_060.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i61" playOrder="61">
+      <navLabel>
+        <text>Chapter 61</text>
+      </navLabel>
+      <content src="../text/chapter_061.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i62" playOrder="62">
+      <navLabel>
+        <text>Chapter 62</text>
+      </navLabel>
+      <content src="../text/chapter_062.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i63" playOrder="63">
+      <navLabel>
+        <text>Chapter 63</text>
+      </navLabel>
+      <content src="../text/chapter_063.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i64" playOrder="64">
+      <navLabel>
+        <text>Chapter 64</text>
+      </navLabel>
+      <content src="../text/chapter_064.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i65" playOrder="65">
+      <navLabel>
+        <text>Chapter 65</text>
+      </navLabel>
+      <content src="../text/chapter_065.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i66" playOrder="66">
+      <navLabel>
+        <text>Chapter 66</text>
+      </navLabel>
+      <content src="../text/chapter_066.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i67" playOrder="67">
+      <navLabel>
+        <text>Chapter 67</text>
+      </navLabel>
+      <content src="../text/chapter_067.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i68" playOrder="68">
+      <navLabel>
+        <text>Chapter 68</text>
+      </navLabel>
+      <content src="../text/chapter_068.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i69" playOrder="69">
+      <navLabel>
+        <text>Chapter 69</text>
+      </navLabel>
+      <content src="../text/chapter_069.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i70" playOrder="70">
+      <navLabel>
+        <text>Chapter 70</text>
+      </navLabel>
+      <content src="../text/chapter_070.html"/>
+    </navPoint>
+
+    <navPoint class="chapter" id="i71" playOrder="71">
+      <navLabel>
+        <text>Chapter 71</text>
+      </navLabel>
+      <content src="../text/chapter_071.html"/>
+    </navPoint>
+    <navPoint class="chapter" id="i72" playOrder="72">
+      <navLabel>
+        <text>Epilogue</text>
+      </navLabel>
+      <content src="../text/epilogue.html"/>
+    </navPoint>
+  </navMap>
+</ncx>
