@@ -107,7 +107,7 @@ def switching_to_sync(loop):
 
         # Getting results (and raising any exceptions thrown)
         # WARNING! cancelled Tasks will break here with "InvalidStateError"
-            future.result()
+        future.result()
 
 
 
